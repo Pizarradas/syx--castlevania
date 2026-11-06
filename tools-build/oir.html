@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8"><title>Render del tema</title>
+<script type="module">
+// Renderiza el tema y una tira de efectos fuera de tiempo real y devuelve el WAV (para escucharlo sin abrir la página)
+import { crearMotor } from "../js/sonido.js";
+window.renderizar = async (vueltas = 1, conEfectos = false) => {
+  const sr = 44100, probe = new OfflineAudioContext(2, sr, sr), ciclo = crearMotor(probe).ciclo;
+  const dur = ciclo * vueltas + 2.5 + (conEfectos ? 8 : 0);
+  const ctx = new OfflineAudioContext(2, Math.ceil(sr * dur), sr), m = crearMotor(ctx);
+  m.tocar(0.05); m.programar(ciclo * vueltas); m.parar && 0;
+  if (conEfectos) ["inicio","latigo","vela","corazon","salto","cae","acierto","superada","fallo","arma","golpe","secreto"].forEach((e, i) => m.efecto(e, ciclo * vueltas + 1 + i * 0.6));
+  const buf = await ctx.startRendering();
+  let pico = 0, suma = 0, n = 0, recortes = 0;
+  for (let c = 0; c < 2; c++) { const d = buf.getChannelData(c); for (let i = 0; i < d.length; i++) { const a = Math.abs(d[i]); if (a > pico) pico = a; if (a >= 0.999) recortes++; suma += d[i] * d[i]; n++; } }
+  // WAV de 16 bits
+  const L = buf.length, out = new DataView(new ArrayBuffer(44 + L * 4)); const w = (o, s) => [...s].forEach((ch, i) => out.setUint8(o + i, ch.charCodeAt(0)));
+  w(0, "RIFF"); out.setUint32(4, 36 + L * 4, true); w(8, "WAVEfmt "); out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 2, true);
+  out.setUint32(24, sr, true); out.setUint32(28, sr * 4, true); out.setUint16(32, 4, true); out.setUint16(34, 16, true); w(36, "data"); out.setUint32(40, L * 4, true);
+  const a = buf.getChannelData(0), b = buf.getChannelData(1);
+  for (let i = 0; i < L; i++) { out.setInt16(44 + i * 4, Math.max(-1, Math.min(1, a[i])) * 32767, true); out.setInt16(46 + i * 4, Math.max(-1, Math.min(1, b[i])) * 32767, true); }
+  const bytes = new Uint8Array(out.buffer); let s = ""; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return { ciclo, dur, pico, rms: Math.sqrt(suma / n), recortes, wav: btoa(s) };
+};
+window.listo = true;
+</script>

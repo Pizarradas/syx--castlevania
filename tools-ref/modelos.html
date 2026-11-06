@@ -1,0 +1,172 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Maniquíes de referencia para los bocetos</title>
+<body style="margin:0;background:#222">
+<canvas id="c"></canvas>
+<script>
+// Maniquíes «esculpidos» con funciones de distancia (SDF): cápsulas cónicas, elipsoides y láminas
+// fundidas con una unión suave, como barro. Solo sirven de referencia para dibujar encima: dan
+// proporciones, qué pieza tapa a cuál y cómo cae la luz. No se ven en la página.
+const P = []; // { t, a, b, c, r1, r2, k, id, f }
+const capsula = (a, b, r1, r2, id, k = 0.04, f = 0) => P.push({ t: 0, a, b, c: [0, 0, 0], r1, r2, k, id, f });
+const elipsoide = (a, r, id, k = 0.05) => P.push({ t: 1, a, b: r, c: [0, 0, 0], r1: 0, r2: 0, k, id, f: 0 });
+const lamina = (a, b, c, grosor, id, k = 0.01) => P.push({ t: 2, a, b, c, r1: grosor, r2: 0, k, id, f: 0 });
+const campana = (a, b, r1, r2, id, f, abertura) => P.push({ t: 3, a, b, c: [abertura, 0, 0], r1, r2, k: 0.0, id, f });
+const ANCLAS = {};
+
+const CRIATURAS = {
+  lobo() {
+    const zf = -0.2, zn = 0.21;
+    // pierna lejana (digitígrada: muslo, corvejón, metatarso y pie)
+    capsula([0.22, 0.95, zf], [0.03, 0.6, zf], 0.14, 0.085, 1); capsula([0.03, 0.6, zf], [0.22, 0.24, zf], 0.08, 0.05, 1);
+    capsula([0.22, 0.24, zf], [0.13, 0.05, zf], 0.052, 0.04, 1); capsula([0.13, 0.04, zf], [-0.08, 0.03, zf], 0.045, 0.032, 1);
+    // brazo lejano
+    capsula([-0.02, 1.44, zf], [0.05, 1.12, zf], 0.1, 0.075, 2); capsula([0.05, 1.12, zf], [-0.2, 0.86, zf], 0.075, 0.05, 2); capsula([-0.2, 0.86, zf], [-0.3, 0.76, zf], 0.05, 0.035, 2);
+    // tronco: caja torácica que se inclina, pectorales, joroba de músculo, vientre recogido y pelvis
+    elipsoide([0.05, 1.24, 0], [0.27, 0.33, 0.24], 4, 0.08);
+    elipsoide([-0.08, 1.33, 0], [0.16, 0.18, 0.22], 4, 0.06);
+    elipsoide([0.06, 1.52, 0], [0.26, 0.17, 0.27], 4, 0.08);
+    elipsoide([0.2, 0.98, 0], [0.19, 0.16, 0.19], 4, 0.1);
+    capsula([0.36, 1.0, 0], [0.56, 0.8, 0.02], 0.09, 0.05, 3, 0.05); capsula([0.56, 0.8, 0.02], [0.62, 0.6, 0.04], 0.05, 0.02, 3, 0.03); // cola
+    // cuello grueso, la cabeza por delante y por debajo de la joroba
+    capsula([-0.04, 1.5, 0], [-0.3, 1.45, 0], 0.16, 0.13, 5, 0.08);
+    // cabeza de lobo: cráneo, arco de la ceja, hocico largo, belfo y la mandíbula abierta
+    elipsoide([-0.38, 1.48, 0], [0.15, 0.13, 0.13], 6, 0.05);
+    elipsoide([-0.46, 1.54, 0], [0.07, 0.035, 0.11], 6, 0.03);
+    capsula([-0.44, 1.46, 0], [-0.74, 1.39, 0], 0.095, 0.052, 6, 0.04);
+    capsula([-0.43, 1.37, 0], [-0.69, 1.25, 0], 0.062, 0.033, 7, 0.02);
+    capsula([-0.3, 1.58, 0.075], [-0.24, 1.76, 0.1], 0.05, 0.008, 6, 0.03); capsula([-0.31, 1.58, -0.075], [-0.25, 1.75, -0.1], 0.05, 0.008, 6, 0.03); // orejas
+    // pierna cercana: el muslo, con el cuádriceps abultado
+    capsula([0.22, 0.92, zn], [0.0, 0.58, zn], 0.15, 0.09, 8); elipsoide([0.1, 0.78, zn + 0.02], [0.1, 0.16, 0.1], 8, 0.06);
+    capsula([0.0, 0.58, zn], [0.24, 0.22, zn], 0.085, 0.055, 8); capsula([0.24, 0.22, zn], [0.13, 0.05, zn], 0.055, 0.04, 8);
+    capsula([0.13, 0.04, zn], [-0.09, 0.03, zn], 0.052, 0.035, 8);
+    // brazo cercano: deltoides, bíceps, antebrazo y mano que cuelga hasta la rodilla
+    elipsoide([-0.03, 1.44, zn - 0.02], [0.13, 0.12, 0.1], 9, 0.05);
+    capsula([-0.04, 1.4, zn], [0.06, 1.1, zn], 0.105, 0.075, 9); capsula([0.06, 1.1, zn], [-0.2, 0.84, zn], 0.08, 0.05, 9);
+    capsula([-0.2, 0.84, zn], [-0.32, 0.74, zn], 0.055, 0.04, 9, 0.02);
+    Object.assign(ANCLAS, { craneo: [-0.38, 1.48, 0.12], costillas: [0.0, 1.2, 0.24], ojo: [-0.49, 1.505, 0.09], boca: [-0.6, 1.33, 0.05], garra: [-0.33, 0.73, zn + 0.03], trufa: [-0.79, 1.4, 0.02], pie1: [-0.11, 0.03, zn], pie2: [-0.1, 0.03, zf], oreja: [-0.24, 1.76, 0.1] });
+    return { cam: [-0.25, 0.08, 1], k: 1 };
+  },
+  vampiro() {
+    // la capa: una campana con pliegues que se abre por delante; dentro, el cuerpo en sombra
+    campana([0, 1.42, 0], [0, 0.0, 0], 0.25, 0.66, 1, 9, 0.12);
+    elipsoide([0, 1.42, 0], [0.27, 0.075, 0.2], 1, 0.06); // hombros
+    capsula([0, 0.1, 0.02], [0, 1.4, 0.02], 0.13, 0.15, 2, 0.02);
+    capsula([0, 1.42, 0.01], [0, 1.6, 0.02], 0.065, 0.06, 4, 0.03); // cuello
+    // cuello alto: dos láminas que se abren detrás de la cabeza
+    [-1, 1].forEach((s) => lamina([s * 0.06, 1.44, -0.04], [s * 0.32, 1.84, -0.14], [s * 0.24, 1.42, 0.0], 0.012, 3));
+    // cabeza alargada: cráneo, pómulos hundidos, mentón en punta y orejas
+    elipsoide([0, 1.73, 0.02], [0.14, 0.185, 0.15], 4, 0.03);
+    elipsoide([0, 1.58, 0.07], [0.075, 0.08, 0.08], 4, 0.04);
+    capsula([-0.13, 1.74, 0], [-0.28, 1.84, -0.03], 0.04, 0.004, 4, 0.02); capsula([0.13, 1.74, 0], [0.28, 1.84, -0.03], 0.04, 0.004, 4, 0.02);
+    // manos de hueso que cierran la capa a la altura del pecho
+    [-1, 1].forEach((s) => {
+      capsula([s * 0.22, 1.24, 0.24], [s * 0.08, 1.18, 0.32], 0.045, 0.035, 5, 0.02);
+      for (let k = 0; k < 4; k++) { capsula([s * 0.08, 1.21 - k * 0.026, 0.32], [s * 0.0, 1.16 - k * 0.03, 0.35], 0.016, 0.012, 5, 0.006); capsula([s * 0.0, 1.16 - k * 0.03, 0.35], [s * -0.03, 1.09 - k * 0.03, 0.34], 0.012, 0.006, 5, 0.004); }
+    });
+    Object.assign(ANCLAS, { ojoI: [-0.06, 1.75, 0.16], ojoD: [0.06, 1.75, 0.16], boca: [0, 1.58, 0.15], manoI: [-0.07, 1.18, 0.3], manoD: [0.07, 1.18, 0.3], pie: [0, 0, 0] });
+    return { cam: [-0.28, 0.05, 1], k: 1 };
+  },
+  murcielago() {
+    [-1, 1].forEach((s) => {
+      const S = [s * 0.1, 0.12, 0], E = [s * 0.36, 0.22, 0.02], M = [s * 0.62, 0.36, 0.04];
+      const T = [[s * 1.04, 0.4, 0.02], [s * 1.12, 0.04, 0], [s * 0.96, -0.26, 0], [s * 0.6, -0.4, 0]], F = [s * 0.1, -0.22, 0];
+      capsula(S, E, 0.034, 0.024, 2, 0.02); capsula(E, M, 0.024, 0.016, 2, 0.01);
+      T.forEach((t) => capsula(M, t, 0.012, 0.005, 2, 0.006));
+      const anillo = [S, E, ...T, F];
+      for (let i = 0; i < anillo.length - 1; i++) {
+        // la membrana se comba entre dedo y dedo: el borde libre se recoge hacia la muñeca
+        const a = anillo[i], b = anillo[i + 1], m = [(a[0] + b[0]) / 2 * 0.86 + M[0] * 0.14, (a[1] + b[1]) / 2 * 0.86 + M[1] * 0.14, -0.05];
+        lamina(M, a, m, 0.005, 1, 0.004); lamina(M, m, b, 0.005, 1, 0.004);
+      }
+    });
+    elipsoide([0, -0.02, 0.03], [0.09, 0.2, 0.08], 3, 0.04);
+    elipsoide([0, 0.25, 0.04], [0.085, 0.08, 0.08], 4, 0.03);
+    capsula([-0.04, 0.31, 0.03], [-0.08, 0.47, 0.02], 0.035, 0.005, 4, 0.02); capsula([0.04, 0.31, 0.03], [0.08, 0.47, 0.02], 0.035, 0.005, 4, 0.02);
+    Object.assign(ANCLAS, { ojoI: [-0.035, 0.27, 0.115], ojoD: [0.035, 0.27, 0.115], boca: [0, 0.205, 0.115], cuerpo: [0, 0.05, 0.1], munecaI: [-0.62, 0.36, 0.04], munecaD: [0.62, 0.36, 0.04], roto: [-0.86, 0.02, 0], pieI: [-0.05, -0.24, 0.05], pieD: [0.05, -0.24, 0.05] });
+    return { cam: [0, 0.12, 1], k: 1 };
+  },
+};
+
+const FS = `#version 300 es
+precision highp float;
+#define N 64
+uniform int n; uniform int modo;
+uniform vec4 A[N]; uniform vec4 B[N]; uniform vec4 Cc[N]; uniform vec4 R[N];
+uniform vec3 org, der, arr, dir;
+in vec2 uv; out vec4 col;
+float smin(float a, float b, float k){ if(k<=0.0) return min(a,b); float h=clamp(0.5+0.5*(b-a)/k,0.,1.); return mix(b,a,h)-k*h*(1.-h); }
+float conoR(vec3 p, vec3 a, vec3 b, float r1, float r2){ vec3 ba=b-a; float l=max(dot(ba,ba),1e-6); float t=clamp(dot(p-a,ba)/l,0.,1.); return length(p-a-ba*t)-mix(r1,r2,t); }
+float elip(vec3 p, vec3 c, vec3 r){ vec3 q=(p-c)/r; float k0=length(q); float k1=length(q/r); return k0*(k0-1.0)/max(k1,1e-5); }
+float tri(vec3 p, vec3 a, vec3 b, vec3 c){ vec3 ba=b-a, pa=p-a, cb=c-b, pb=p-b, ac=a-c, pc=p-c; vec3 nor=cross(ba,ac);
+  return sqrt((sign(dot(cross(ba,nor),pa))+sign(dot(cross(cb,nor),pb))+sign(dot(cross(ac,nor),pc))<2.0)
+   ? min(min(dot(ba*clamp(dot(ba,pa)/dot(ba,ba),0.,1.)-pa,ba*clamp(dot(ba,pa)/dot(ba,ba),0.,1.)-pa), dot(cb*clamp(dot(cb,pb)/dot(cb,cb),0.,1.)-pb,cb*clamp(dot(cb,pb)/dot(cb,cb),0.,1.)-pb)), dot(ac*clamp(dot(ac,pc)/dot(ac,ac),0.,1.)-pc,ac*clamp(dot(ac,pc)/dot(ac,ac),0.,1.)-pc))
+   : dot(nor,pa)*dot(nor,pa)/dot(nor,nor)); }
+float prim(int i, vec3 p){
+  int t=int(R[i].w);
+  if(t==0) return conoR(p,A[i].xyz,B[i].xyz,R[i].x,R[i].y);
+  if(t==1) return elip(p,A[i].xyz,B[i].xyz);
+  if(t==2) return tri(p,A[i].xyz,B[i].xyz,Cc[i].xyz)-R[i].x;
+  // campana: cono con pliegues verticales y una abertura delante
+  vec3 a=A[i].xyz, b=B[i].xyz; float d=conoR(p,a,b,R[i].x,R[i].y);
+  float ang=atan(p.x-a.x,p.z-a.z); float h=clamp((a.y-p.y)/(a.y-b.y),0.,1.);
+  d+=sin(ang*A[i].w)*0.03*h*h;
+  d=max(d, b.y-p.y); // el bajo, cortado a ras de suelo
+  d=max(d, p.y-a.y); // y arriba, a la altura de los hombros (los redondea el elipsoide de los hombros)
+  float w=Cc[i].x*(0.25+h*1.4); float hueco=max(abs(p.x-a.x)-w, a.z+0.02-p.z);
+  return max(d,-hueco);
+}
+vec2 mapa(vec3 p){ float d=1e9; float best=1e9; float id=0.;
+  for(int i=0;i<N;i++){ if(i>=n) break; float di=prim(i,p); d=smin(d,di,B[i].w); if(di<best){best=di; id=Cc[i].w;} }
+  return vec2(d,id); }
+vec3 normal(vec3 p){ vec2 e=vec2(0.0015,0.); return normalize(vec3(mapa(p+e.xyy).x-mapa(p-e.xyy).x, mapa(p+e.yxy).x-mapa(p-e.yxy).x, mapa(p+e.yyx).x-mapa(p-e.yyx).x)); }
+void main(){
+  vec3 ro=org+der*(uv.x*2.-1.)+arr*(uv.y*2.-1.)-dir*4.0; float t=0.; vec2 h; bool hit=false;
+  for(int k=0;k<220;k++){ h=mapa(ro+dir*t); if(h.x<0.0008){hit=true;break;} t+=h.x*0.9; if(t>8.) break; }
+  if(!hit){ col=vec4(0); return; }
+  vec3 p=ro+dir*t;
+  if(modo==0){ col=vec4(h.y/255.,0,0,1); return; }
+  vec3 nw=normal(p); vec3 nv=vec3(dot(nw,normalize(der)),dot(nw,normalize(arr)),dot(nw,-dir));
+  col=vec4(nv*0.5+0.5,1);
+}`;
+const VS = `#version 300 es
+in vec2 pos; out vec2 uv; void main(){ uv=pos*0.5+0.5; gl_Position=vec4(pos,0,1); }`;
+
+const cv = document.getElementById("c"), gl = cv.getContext("webgl2", { preserveDrawingBuffer: true });
+function prog() {
+  const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
+  const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p)); return p;
+}
+const pr = prog(); gl.useProgram(pr);
+const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(pr, "pos"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+const u = (k) => gl.getUniformLocation(pr, k);
+const norm = (v) => { const l = Math.hypot(...v); return v.map((x) => x / l); };
+const cruz = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const punto = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+
+window.render = (nombre, ancho, alto) => {
+  P.length = 0; for (const k in ANCLAS) delete ANCLAS[k];
+  const { cam } = CRIATURAS[nombre]();
+  const dir = norm(cam).map((x) => -x); // la cámara mira hacia -cam
+  const derecha = norm(cruz(dir, [0, 1, 0])), arriba = cruz(derecha, dir);
+  // encuadre: caja de las piezas proyectada en el plano de la cámara
+  const pts = []; P.forEach((q) => { const r = Math.max(q.r1, q.r2, q.t === 1 ? Math.max(...q.b) : 0, q.t === 3 ? q.r2 * 1.1 : 0) + 0.02; [q.a, q.t === 1 ? q.a : q.b, q.t === 2 ? q.c : q.a].forEach((c) => { pts.push([punto(c, derecha) - r, punto(c, arriba) - r]); pts.push([punto(c, derecha) + r, punto(c, arriba) + r]); }); });
+  let x0 = Math.min(...pts.map((p) => p[0])), x1 = Math.max(...pts.map((p) => p[0])), y0 = Math.min(...pts.map((p) => p[1])), y1 = Math.max(...pts.map((p) => p[1]));
+  let w = x1 - x0, h = y1 - y0; const asp = ancho / alto; if (w / h > asp) h = w / asp; else w = h * asp; w *= 1.03; h *= 1.03;
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  const org = [0, 1, 2].map((i) => derecha[i] * cx + arriba[i] * cy);
+  cv.width = ancho; cv.height = alto; gl.viewport(0, 0, ancho, alto);
+  const A = [], B = [], C = [], R = [];
+  P.forEach((q) => { A.push(...q.a, q.f); B.push(...q.b, q.k); C.push(...q.c, q.id); R.push(q.r1, q.r2, 0, q.t); });
+  gl.uniform1i(u("n"), P.length); gl.uniform4fv(u("A"), A); gl.uniform4fv(u("B"), B); gl.uniform4fv(u("Cc"), C); gl.uniform4fv(u("R"), R);
+  gl.uniform3fv(u("org"), org); gl.uniform3fv(u("der"), derecha.map((x) => x * w / 2)); gl.uniform3fv(u("arr"), arriba.map((x) => x * h / 2)); gl.uniform3fv(u("dir"), dir);
+  const leer = () => { const px = new Uint8Array(ancho * alto * 4); gl.readPixels(0, 0, ancho, alto, gl.RGBA, gl.UNSIGNED_BYTE, px); let s = ""; for (let i = 0; i < px.length; i += 8192) s += String.fromCharCode.apply(null, px.subarray(i, i + 8192)); return btoa(s); };
+  gl.uniform1i(u("modo"), 0); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); const ids = leer();
+  gl.uniform1i(u("modo"), 1); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); const normales = leer();
+  const anclas = {}; for (const [k, p] of Object.entries(ANCLAS)) anclas[k] = [((punto(p, derecha) - cx) / w + 0.5) * ancho, (0.5 - (punto(p, arriba) - cy) / h) * alto];
+  return { ids, normales, anclas, ancho, alto };
+};
+window.listo = true;
+</script>

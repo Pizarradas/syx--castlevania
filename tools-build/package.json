@@ -1,0 +1,18 @@
+{
+  "name": "belmont-tools-build",
+  "private": true,
+  "type": "module",
+  "description": "Herramientas para regenerar los modelos comprimidos y el paquete recortado de three.js. No hacen falta para servir la página.",
+  "scripts": {
+    "glb": "node comprimir-glb.mjs ../models/originales/castillo.glb ../models/castillo.glb && node comprimir-glb.mjs ../models/originales/iconos.glb ../models/iconos.glb && node comprimir-glb.mjs ../models/originales/cazador.glb ../models/cazador.glb Jump_Full_Short",
+    "three": "esbuild entrada-three.js --bundle --format=esm --minify --target=es2020 --legal-comments=eof --outfile=../vendor/three/three-belmont.js"
+  },
+  "devDependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
+    "meshoptimizer": "^0.22.0",
+    "three": "0.187.0",
+    "esbuild": "^0.25.0"
+  }
+}

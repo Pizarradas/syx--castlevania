@@ -24,6 +24,53 @@ const mov = Plantillas.iniciarMovimiento({
   opciones: { lenis: { lerp: 0.085, wheelMultiplier: 0.9 } },
 });
 document.documentElement.classList.toggle("is-reduced", mov.reducido);
+/* Versión ligera para móvil (pantalla estrecha, o táctil hasta tableta en vertical): sin 3D y con menos efectos.
+   ?completa la fuerza fuera y ?lite dentro, para probar */
+const LITE = (() => {
+  const q = new URLSearchParams(location.search);
+  if (q.has("completa")) return false;
+  if (q.has("lite")) return true;
+  return matchMedia("(max-width: 767px), (pointer: coarse) and (max-width: 1023px)").matches;
+})();
+document.documentElement.classList.toggle("is-lite", LITE);
+
+/* ── Sonido: tema principal y efectos (js/sonido.js, que solo se descarga si se activa) ──
+   Apagado por defecto y recordado entre visitas. El AudioContext se crea dentro de un gesto (clic o tecla),
+   como exige el navegador; si la página se abre con el sonido ya activado, arranca con el primer gesto. */
+const CLAVE_SONIDO = "belmont-sonido";
+let sonidoActivo = (() => { try { return localStorage.getItem(CLAVE_SONIDO) === "si"; } catch { return false; } })();
+let audioCtx = null, sonido = null, cargaSonido = null, dentro = false;
+const ctxAudio = () => { // síncrono: debe llamarse dentro del gesto
+  try { audioCtx ||= new (window.AudioContext || window.webkitAudioContext)({ latencyHint: "interactive" }); audioCtx.resume(); } catch { audioCtx = null; }
+  return audioCtx;
+};
+const cargarSonido = () => cargaSonido ||= import("./sonido.js").then(({ crearSonido }) => (sonido = crearSonido({ gsap, ctx: audioCtx }))).catch((err) => { console.warn("belmont: sin sonido", err); return null; });
+const sfx = (nombre) => { if (sonidoActivo && sonido) sonido.efecto(nombre); };
+function arrancarSonido() { // dentro de un gesto
+  if (!sonidoActivo || !ctxAudio()) return;
+  cargarSonido().then((s) => { if (s && sonidoActivo && dentro && !s.sonando) s.tocar(s.ctx.currentTime + 0.6); });
+}
+function ponerSonido(si) {
+  sonidoActivo = si;
+  try { localStorage.setItem(CLAVE_SONIDO, si ? "si" : "no"); } catch { /* sin almacenamiento: vale para esta visita */ }
+  document.querySelectorAll("[data-sound-toggle]").forEach((b) => {
+    b.setAttribute("aria-pressed", String(si));
+    const t = b.querySelector("[data-sound-label]"); if (t) t.textContent = si ? "SÍ" : "NO";
+  });
+  document.documentElement.classList.toggle("is-sound", si);
+  if (si) arrancarSonido(); else if (sonido) sonido.parar();
+}
+// con el sonido activado de una visita anterior: el primer clic o tecla lo despierta (la rueda no cuenta como gesto)
+const despertar = () => { if (sonidoActivo && (!audioCtx || audioCtx.state !== "running")) arrancarSonido(); };
+window.addEventListener("pointerdown", despertar, { passive: true });
+window.addEventListener("keydown", despertar);
+// los interruptores (pantalla de inicio, HUD y banda sonora) comparten el mismo estado
+document.querySelectorAll("[data-sound-toggle]").forEach((b) => b.addEventListener("click", () => {
+  ponerSonido(!sonidoActivo);
+  if (sonidoActivo) cargarSonido().then((s) => s && s.efecto("corazon")); // un pitido: se oye que está encendido
+}));
+ponerSonido(sonidoActivo); // pinta el estado recordado (no suena hasta el primer gesto)
+window.__sonido = () => ({ contexto: audioCtx && audioCtx.state, cargado: !!sonido, sonando: !!(sonido && sonido.sonando), activo: sonidoActivo, dentro }); // pruebas automáticas
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -45,13 +92,15 @@ function paleta() {
 /* ── 1 · Intro PUSH START ─────────────────────────────────── */
 function intro(alEntrar) {
   const capa = $("[data-intro]");
-  if (mov.reducido) { alEntrar(); return; }
+  if (mov.reducido) { dentro = true; alEntrar(); return; }
   capa.hidden = false;
   mov.bloquear();
   let hecho = false;
-  const entrar = () => {
-    if (hecho) return;
+  const entrar = (e) => {
+    if (hecho || (e && e.target instanceof Element && e.target.closest("[data-sound-toggle]"))) return;
     hecho = true;
+    dentro = true;
+    if (sonidoActivo && ctxAudio()) cargarSonido().then((s) => { if (s && sonidoActivo) { s.efecto("inicio"); if (!s.sonando) s.tocar(s.ctx.currentTime + 1.1); } });
     quitar();
     const tl = gsap.timeline({
       onComplete: () => { capa.hidden = true; },
@@ -66,7 +115,8 @@ function intro(alEntrar) {
       })
       .to("[data-curtain]", { scaleX: 0, duration: 0.8, ease: "power3.inOut", transformOrigin: (i) => (i ? "right" : "left") }, "+=0.05");
   };
-  const tecla = (e) => { if (!["Tab", "Shift"].includes(e.key)) entrar(); };
+  const esInterruptor = (e) => e.target instanceof Element && e.target.closest("[data-sound-toggle]"); // el botón de sonido no entra en la página
+  const tecla = (e) => { if (!["Tab", "Shift"].includes(e.key) && !esInterruptor(e)) entrar(); };
   const quitar = () => {
     window.removeEventListener("wheel", entrar);
     window.removeEventListener("touchstart", entrar);
@@ -135,7 +185,7 @@ function cielo() {
   let rayo = null;
 
   function medir() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = LITE ? 1 : Math.min(window.devicePixelRatio || 1, 2); // en la versión ligera, el cielo a resolución CSS
     w = canvas.clientWidth; h = canvas.clientHeight;
     canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -229,6 +279,7 @@ const cuandoCerca = (trigger, fn) => {
 // ¿Hay WebGL 2? Se mira una vez y se suelta el contexto de prueba: cada contexto vivo cuenta para el tope del navegador
 let hayWebgl = null;
 const webgl = () => {
+  if (LITE) return false; // versión ligera: ni three.js ni modelos se descargan; quedan las ilustraciones SVG de reserva
   if (hayWebgl !== null) return hayWebgl;
   try { const gl = document.createElement("canvas").getContext("webgl2"); hayWebgl = !!gl; gl && gl.getExtension("WEBGL_lose_context")?.loseContext(); } catch { hayWebgl = false; }
   return hayWebgl;
@@ -746,7 +797,7 @@ function arsenal() {
       .to(vuela, { scale: 1.35, duration: 0.18, ease: "power2.out" })                                           // se suelta del arsenal
       .to(vuela, { motionPath: { path: [{ x: x0, y: y0 }, { x: (x0 + x1) / 2, y: Math.min(y0, y1) - innerHeight * 0.18 }, { x: x1, y: y1 }], curviness: 1.25 },
         scale: fin / lado, rotation: 360, duration: 0.85, ease: "power2.in" })                                  // arco y giro, acelerando hacia el HUD
-      .add(() => { poner(); gsap.fromTo(marcoSub, { scale: 1.5, boxShadow: "0 0 18px var(--belmont-wax)" }, { scale: 1, boxShadow: "0 0 0px transparent", duration: 0.45, ease: "back.out(3)" }); });
+      .add(() => { poner(); sfx("arma"); gsap.fromTo(marcoSub, { scale: 1.5, boxShadow: "0 0 18px var(--belmont-wax)" }, { scale: 1, boxShadow: "0 0 0px transparent", duration: 0.45, ease: "back.out(3)" }); });
   };
   const equipar = (b) => {
     if (p.hecha && b.classList.contains("is-equipped")) return;
@@ -832,7 +883,7 @@ function latigoJugable() {
     hits++; golpes.textContent = hits; if (golpesTxt) golpesTxt.textContent = hits === 1 ? "GOLPE" : "GOLPES"; hud.puntos(100);
     const rayo = rayos[(idx + 2) % 8]; // los rayos empiezan en el norte
     if (mov.reducido) return;
-    cuerda.restallar(() => { rayo.classList.add("is-hit"); gsap.delayedCall(0.6, () => rayo.classList.remove("is-hit")); });
+    cuerda.restallar(() => { sfx("latigo"); rayo.classList.add("is-hit"); gsap.delayedCall(0.6, () => rayo.classList.remove("is-hit")); });
   };
   /* El cuero como una cuerda de verlet (puntos con inercia unidos por tramos de longitud fija), en el
      marco del brazo que apunta: x hacia fuera. La mano tira atrás, la onda avanza tramo a tramo y la
@@ -955,6 +1006,7 @@ function candelabro() {
   const simonEl = $("[data-simon]");
   let latigo = null;
   const latigazo = (vela, alGolpe) => {
+    sfx("latigo");
     const slot = simonEl && $("[data-icon3d]", simonEl);
     if (mov.reducido || !simonEl) { alGolpe(); return; }
     if (!latigo) {
@@ -990,12 +1042,13 @@ function candelabro() {
     latigazo(vela, () => romper(vela));
   }));
   function romper(vela) {
+    sfx("vela");
     vela.classList.add("is-broken"); vela.disabled = true;
     rotas++; cuenta.textContent = rotas;
     const tipo = vela.dataset.drop;
     if (tipo === "llave") { partida.llave = true; aviso.textContent = "· ¡Una llave! Guárdala para el muro secreto."; }
     else if (rotas === 5 && !partida.llave) aviso.textContent = "";
-    hud.corazones(VALOR[tipo]); hud.puntos(200);
+    hud.corazones(VALOR[tipo]); hud.puntos(200); if (VALOR[tipo]) sfx("corazon");
     const c = caidas.getBoundingClientRect(), v = vela.getBoundingClientRect();
     const d = document.createElement("span");
     d.className = "belmont-drop"; d.textContent = GLIFO[tipo];
@@ -1073,14 +1126,14 @@ function candelabro() {
 }
 
 /* ── Bosque (fase 2): tramo lateral con cinco planos de parallax ── */
-let bosqueTL = null; // las pruebas del bosque se activan sobre esta pista (containerAnimation)
+let bosqueTL = null, bosqueCerca = false; // bosqueCerca: la pista está en pantalla (las pruebas no miran sus tarjetas si no) // las pruebas del bosque se activan sobre esta pista (containerAnimation)
 function bosque() {
   mov.añadir(({ reducido }) => {
     const pin = $("[data-forest-pin]"), track = $(".belmont-forest__track", pin);
     const capas = $$("[data-forest-layer]", pin).filter((c) => c !== track);
     // luciérnagas repartidas a lo largo del bosque
     const enjambre = $("[data-flies]", pin);
-    if (!enjambre.children.length) for (let i = 0; i < 60; i++) {
+    if (!enjambre.children.length) for (let i = 0; i < (LITE ? 14 : 60); i++) { // menos luciérnagas en la versión ligera
       const f = document.createElement("span"); f.className = "belmont-fly";
       f.style.left = Math.random() * 100 + "%"; f.style.top = 35 + Math.random() * 55 + "%";
       enjambre.append(f);
@@ -1133,7 +1186,7 @@ function bosque() {
         window.addEventListener("pagehide", () => b3.salir(), { once: true });
       }).catch((err) => console.warn("belmont: bosque 3D no disponible", err)));
     }
-    const st = ScrollTrigger.create({ trigger: pin, start: "top bottom", end: () => "+=" + (innerHeight + distancia() * 1.2 + innerHeight), onToggle: (s) => vuelos.forEach((b) => (s.isActive ? b.play() : b.pause())) });
+    const st = ScrollTrigger.create({ trigger: pin, start: "top bottom", end: () => "+=" + (innerHeight + distancia() * 1.2 + innerHeight), onToggle: (s) => { bosqueCerca = s.isActive; vuelos.forEach((b) => (s.isActive ? b.play() : b.pause())); } });
     return () => { st.kill(); vuelos.forEach((b) => b.kill()); bosqueTL = null; if (snap) { ScrollTrigger.removeEventListener("refresh", snap.__puntos); snap.destroy(); } };
   });
 }
@@ -1185,7 +1238,7 @@ function muro() {
   const ladrillos = $$(".belmont-wall__brick", muroEl);
   muroEl.addEventListener("click", () => {
     if (golpes >= 3) return;
-    golpes++; hud.puntos(150);
+    golpes++; hud.puntos(150); sfx(golpes === 3 ? "secreto" : "golpe");
     if (!mov.reducido) gsap.fromTo(muroEl, { x: -8 }, { x: 0, duration: 0.4, ease: "elastic.out(1, 0.3)" });
     if (golpes === 1) { muroEl.classList.add("is-cracked"); msg.textContent = "Algo suena hueco…"; }
     if (golpes === 2) {
@@ -1223,6 +1276,7 @@ function konami() {
     if (pos < codigo.length) return;
     pos = 0;
     const on = document.documentElement.classList.toggle("is-blood");
+    sfx("secreto");
     hud.corazones(on ? 99 : 0, true);
     hud.aviso(on ? "MODO SANGRE · 99 ♥" : "MODO SANGRE DESACTIVADO");
   });
@@ -1236,8 +1290,14 @@ function musica() {
     const setters = barras.map((b) => gsap.quickTo(b, "scaleY", { duration: 0.25, ease: "power2.out" }));
     let visible = false;
     const st = ScrollTrigger.create({ trigger: "[data-eq]", start: "top bottom", end: "bottom top", onToggle: (s) => (visible = s.isActive) });
+    const leyenda = $("[data-eq-caption]"), textoScroll = leyenda ? leyenda.textContent : "";
+    let conTema = null;
     const paso = (t) => {
       if (!visible) return;
+      // con el tema sonando, el ecualizador muestra de verdad sus frecuencias; si no, sigue la velocidad del scroll
+      const suena = !!(sonido && sonidoActivo && sonido.sonando);
+      if (suena !== conTema && leyenda) { conTema = suena; leyenda.textContent = suena ? "8 BANDAS · SUENA «LA NOCHE DE 1691»" : textoScroll; }
+      if (suena) { const nv = sonido.niveles(setters.length); setters.forEach((set, i) => set(0.06 + nv[i] * 0.94)); return; }
       const v = Math.min(1, Math.abs(hud.velocidad()) / 2600);
       setters.forEach((set, i) => set(0.06 + v * (0.35 + 0.65 * Math.abs(Math.sin(t * (3 + i * 0.7) + i)))));
     };
@@ -1434,7 +1494,7 @@ function prueba(id, { alAbrir, activar, vigilar, reubicar, enPin = false, accion
     gracia = performance.now() + 1500;
     caja.classList.add("is-done");
     estadoEl.textContent = saltada ? "Prueba saltada · explicación abierta" : "¡Prueba superada! Explicación abierta";
-    if (!saltada) { hud.puntos(1000); hud.aviso("PRUEBA SUPERADA · +1000"); }
+    if (!saltada) { hud.puntos(1000); hud.aviso("PRUEBA SUPERADA · +1000"); sfx("superada"); }
     sellos.forEach((s) => { s.inert = false; s.classList.add("is-open"); });
     if (!mov.reducido) gsap.fromTo(sellos, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 1, ease: "power3.inOut", stagger: 0.15, clearProps: "clipPath" });
     alAbrir && alAbrir();
@@ -1452,8 +1512,8 @@ function prueba(id, { alAbrir, activar, vigilar, reubicar, enPin = false, accion
   return {
     caja,
     get hecha() { return hecha; },
-    sumar() { if (hecha) return; n = Math.min(total, n + 1); pintar(); if (n >= total) gsap.delayedCall(0.5, () => abrir(false)); },
-    reiniciar() { if (hecha) return; n = 0; pintar(); },
+    sumar() { if (hecha) return; n = Math.min(total, n + 1); pintar(); if (n >= total) gsap.delayedCall(0.5, () => abrir(false)); else sfx("acierto"); },
+    reiniciar() { if (hecha) return; n = 0; pintar(); sfx("fallo"); },
     decir(texto) { if (!hecha) estadoEl.textContent = `${n}/${total} · ${texto}`; },
     // medidor de precisión: valor en −1…1 (0 = centro de la franja)
     aguja(v) { const a = $("[data-trial-needle]", caja); if (a) a.style.insetInlineStart = (50 + gsap.utils.clamp(-1, 1, v) * 50).toFixed(2) + "%"; caja.classList.toggle("is-hot", Math.abs(v) < 0.29); },
@@ -1599,7 +1659,7 @@ function saltarASiguiente(carta) {
     if (fase === "agacha") {
       const [x, y] = pies(de.heroe); gsap.set(volador, { x, y });
       if (t >= DESPEGA) {
-        fase = "vuela"; despegue = [x, y]; fig.dataset.pose = "salta"; polvo(pin, x, y, false);
+        fase = "vuela"; despegue = [x, y]; fig.dataset.pose = "salta"; polvo(pin, x, y, false); sfx("salto");
         const [tx, ty] = destino();
         H = gsap.utils.clamp(90, pin.clientHeight * 0.36, Math.hypot(tx - x, ty - y) * 0.42); // más lejos, más alto: como un salto de verdad
       }
@@ -1612,7 +1672,7 @@ function saltarASiguiente(carta) {
       gsap.set(volador, { x, y });
       if (u >= 1) {
         if (!a) { gsap.ticker.remove(tic); volador.style.visibility = "hidden"; delete fig.dataset.pose; volando = false; return; }
-        fase = "cae"; fig.dataset.pose = ""; polvo(pin, tx, ty, true); // pisa: el Jump_Land sale solo al tocar suelo
+        fase = "cae"; fig.dataset.pose = ""; polvo(pin, tx, ty, true); sfx("cae"); // pisa: el Jump_Land sale solo al tocar suelo
       }
       return;
     }
@@ -1630,7 +1690,7 @@ function juegoBosque(id, montar) {
   const caja = $("[data-game]", carta), heroe = $("[data-hero]", carta), figura = $("[data-icon3d]", heroe);
   const p = prueba(id, {
     // cuando la tarjeta llega al centro de la pista (y la pista está fijada en pantalla)
-    vigilar: () => { if (!bosqueTL) return false; const r = carta.getBoundingClientRect(), c = r.left + r.width / 2; return c < innerWidth * 0.56 && c > innerWidth * 0.4 && r.top > -r.height * 0.2 && r.bottom < innerHeight * 1.2 && Math.abs($("[data-forest-pin]").getBoundingClientRect().top) < 4; },
+    vigilar: () => { if (!bosqueTL || !bosqueCerca) return false; const r = carta.getBoundingClientRect(), c = r.left + r.width / 2; return c < innerWidth * 0.56 && c > innerWidth * 0.4 && r.top > -r.height * 0.2 && r.bottom < innerHeight * 1.2 && Math.abs($("[data-forest-pin]").getBoundingClientRect().top) < 4; },
     // la pista avanza 1 px por cada 1,2 px de scroll (fin = distancia × 1,2): se corrige lo que falte para centrarla
     reubicar: () => { const r = carta.getBoundingClientRect(), d = r.left + r.width / 2 - innerWidth / 2; if (Math.abs(d) > 4) mov.irA(scrollY + d * 1.2, { forzar: true, duracion: 0.35 }); }, // la pista se desliza hasta centrarla
     enPin: true, enLinea: true, accion: () => boton.click(), // el panel se queda en su tarjeta: no se confunde con el de las otras
@@ -1667,7 +1727,7 @@ function juegoBosque(id, montar) {
 }
 
 function pruebasBosque() {
-  const salto = (el, x, y, alto, dur, onComplete) => gsap.to(el, { x, duration: dur, ease: "none", onComplete }) && gsap.to(el, { keyframes: [{ y: Math.min(gsap.getProperty(el, "y"), y) - alto, duration: dur * 0.45, ease: "power2.out" }, { y, duration: dur * 0.55, ease: "power2.in" }] });
+  const salto = (el, x, y, alto, dur, onComplete) => sfx("salto") || gsap.to(el, { x, duration: dur, ease: "none", onComplete }) && gsap.to(el, { keyframes: [{ y: Math.min(gsap.getProperty(el, "y"), y) - alto, duration: dur * 0.45, ease: "power2.out" }, { y, duration: dur * 0.55, ease: "power2.in" }] });
   const chapuzon = (el, onComplete) => gsap.to(el, { y: "+=70", opacity: 0, duration: 0.5, ease: "power2.in", onComplete: () => { gsap.set(el, { opacity: 1 }); onComplete(); } });
 
   /* 2-1 · Plataformas que se hunden: salta cuando el siguiente tronco asoma; el que pisas se hunde */
@@ -1828,12 +1888,12 @@ function pruebaModo7() {
       const tl = gsap.timeline({ delay: 0.5 });
       tl.to(cuelga, { rotation: 0, duration: 0.5, ease: "power2.out" })
         .fromTo(cornisa, { autoAlpha: 0, yPercent: 60 }, { autoAlpha: 1, yPercent: 0, duration: 0.6, ease: "back.out(1.6)" }, "<")
-        .add(() => { if (sl) sl.dataset.pose = "salta"; })
+        .add(() => { if (sl) sl.dataset.pose = "salta"; sfx("salto"); })
         .to(soga, { scaleY: 0, transformOrigin: "50% 0", duration: 0.35, ease: "power2.in" })
         .to(heroe, { y: () => (cornisa ? cornisa.offsetTop - (heroe.offsetTop + heroe.offsetHeight) : 0), duration: 0.45, ease: "power2.in" }, "<")
         .add(() => {
           if (sl) { sl.dataset.pose = ""; sl.__accion = { nombre: "Cheer", t: performance.now(), velocidad: 1, luego: [{ nombre: "Cheer", velocidad: 1.1 }] }; }
-          hud.aviso("¡A SALVO!");
+          hud.aviso("¡A SALVO!"); sfx("cae");
         })
         .to(heroe, { scaleY: 0.92, transformOrigin: "50% 100%", duration: 0.08, yoyo: true, repeat: 1 })
         .add(() => gsap.to(sala7, { juego: 0, duration: 1.6, ease: "power2.inOut" }), "+=0.6");

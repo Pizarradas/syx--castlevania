@@ -119,7 +119,7 @@
   /* h2: la palabra más larga (8 versales Cinzel, 0.68em) cabe en 288 px → 288 / 5.44 ≈ 14vw a 320 */
   --belmont-h2-fit: 15vw;
   /* «Ha caído» en Fraktur ≈ 8 × 0.42em = 3.4em → cabe en el ancho útil con 24vw */
-  --belmont-end-fit: 24vw;
+  --belmont-end-fit: 22vw; /* «Ha caído» cabe hasta en 320 px (con 24vw se salía 3 px) */
   --belmont-tracking-caps: var(--semantic-letter-spacing-wider);
 
   /* cadena de proximidad (L5): micro < inner < padding < gutter ≤ margen < sección */
@@ -404,6 +404,13 @@
     color: var(--belmont-ink-mute);
     font-size: var(--semantic-font-size-body-sm);
   }
+  /* la resolución recomendada: un mensaje para ordenador, otro si la ventana se queda corta y otro para la versión ligera */
+  .belmont-intro__res { margin: 0; max-inline-size: var(--belmont-measure); padding: var(--belmont-padding) var(--belmont-gutter); border: var(--belmont-border) solid color-mix(in oklch, var(--belmont-wax) 40%, transparent); color: var(--belmont-ink-soft); font-size: var(--semantic-font-size-body-sm); }
+  .belmont-intro__res strong { color: var(--belmont-wax); font-weight: 500; }
+  .belmont-intro__res-pequena, .belmont-intro__res-lite { display: none; }
+  @media (max-width: 1279px), (max-height: 719px) { .belmont-intro__res-pc { display: none; } .belmont-intro__res-pequena { display: inline; } }
+  .is-lite .belmont-intro__res-pc, .is-lite .belmont-intro__res-pequena { display: none; }
+  .is-lite .belmont-intro__res-lite { display: inline; }
   .belmont-intro__curtain {
     /* syx-allow R03: capa escénica o HUD fijo, sin mixin en CSS plano */
     position: absolute;
@@ -433,6 +440,8 @@
     block-size: 100%;
     z-index: var(--belmont-z-sky);
   }
+  /* en móviles pequeños la luna se encoge (también por la altura) para no quedar detrás del texto de la portada */
+  @media (max-width: 47.99em) { .belmont-hero .belmont-hero__moon { inline-size: min(var(--belmont-moon-size), 40vw, 18svh); inset-block-start: max(2.75rem, 6%); } } /* más específica que la regla base, que va después */
   .belmont-hero__flash { background: var(--belmont-moon); opacity: 0; mix-blend-mode: soft-light; pointer-events: none; }
   .belmont-hero__moon {
     /* syx-allow R03: capa escénica o HUD fijo, sin mixin en CSS plano */
@@ -511,16 +520,25 @@
     line-height: 1.04;
     font-size: min(var(--belmont-title-fit), var(--belmont-step-5) * 1.4);
     white-space: nowrap;
-    background: linear-gradient(to bottom, var(--belmont-ink) 20%, var(--belmont-blood-text) 62%, var(--belmont-blood-deep) 88%);
+    /* el degradado, con paradas en em (no en %): así cae igual sobre la palabra y sobre cada letra suelta de la entrada */
+    --belmont-titulo-ink: 0.208em; --belmont-titulo-sangre: 0.645em; --belmont-titulo-fondo: 0.915em;
+    background: linear-gradient(to bottom, var(--belmont-ink) var(--belmont-titulo-ink), var(--belmont-blood-text) var(--belmont-titulo-sangre), var(--belmont-blood-deep) var(--belmont-titulo-fondo));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     filter: drop-shadow(0 0.04em 0 var(--belmont-bg-deep));
   }
-  .belmont-title__main .belmont-word,
-  .belmont-title__main .belmont-char { background: inherit; -webkit-background-clip: text; background-clip: text; }
-  /* los rasgos de la C y la l de Fraktur salen de la caja del carácter: se amplía el área de fondo para no recortarlos */
-  .belmont-title__main .belmont-char { padding: 0.3em 0.14em; margin: -0.3em -0.14em; }
+  /* troceado en letras (solo durante la entrada): pinta cada letra y la palabra deja de pintar; antes se pintaban las dos
+     a la vez, desalineadas, y aparecía una C fantasma más clara */
+  .belmont-title__main:has(.belmont-char) { background: none; }
+  .belmont-title__main .belmont-word { background: none; }
+  /* los rasgos de la C y la l de Fraktur salen de la caja del carácter: se amplía el área de fondo para no recortarlos,
+     y las paradas del degradado se desplazan lo mismo que esa ampliación (0,3 em) para que no cambie el color */
+  .belmont-title__main .belmont-char {
+    padding: 0.3em 0.14em; margin: -0.3em -0.14em;
+    background: linear-gradient(to bottom, var(--belmont-ink) calc(var(--belmont-titulo-ink) + 0.3em), var(--belmont-blood-text) calc(var(--belmont-titulo-sangre) + 0.3em), var(--belmont-blood-deep) calc(var(--belmont-titulo-fondo) + 0.3em));
+    -webkit-background-clip: text; background-clip: text;
+  }
   /* Ruptura: el numeral sale de la retícula desde la línea d3-2 hasta el borde (full-end) */
   .belmont-hero__numeral {
     grid-column: d3-2 / full-end;
@@ -545,6 +563,11 @@
     user-select: none;
   }
   .belmont-hero__copy { grid-row: 1; align-self: end; container-type: inline-size; }
+  /* en el móvil no hay sitio al lado del título: el IV queda detrás del texto, como una marca de agua, sin taparlo */
+  @media (max-width: 47.99em) {
+    .belmont-hero__copy { position: relative; z-index: var(--belmont-z-text); }
+    .belmont-hero__numeral { opacity: 0.35; }
+  }
   .belmont-hero__tag {
     margin: var(--belmont-gutter) 0 0;
     max-inline-size: var(--belmont-measure);
@@ -2017,6 +2040,10 @@
     background: radial-gradient(circle at 38% 34%, color-mix(in oklch, var(--belmont-blood-text) 70%, var(--belmont-blood)) 0 12%, var(--belmont-blood) 40%, var(--belmont-blood-deep) 85%);
     box-shadow: 0 0.2rem 0.5rem color-mix(in oklch, var(--belmont-bg-deep) 70%, transparent), inset 0 -0.2rem 0.4rem color-mix(in oklch, var(--belmont-bg-deep) 50%, transparent);
   }
+  /* antes de caer, el lacre espera escalado ×2,2 (invisible): en el móvil sobresalía por la derecha y ensanchaba la página */
+  @media (max-width: 47.99em) { .belmont-prologue { overflow-x: clip; } }
+  /* el foco que se lleva por programa a lo que se abre (lo lee el lector de pantalla) no dibuja un recuadro pegado al texto */
+  [data-sealed]:focus, [tabindex="-1"]:focus { outline: none; }
   .belmont-letter__seal span {
     display: grid;
     place-items: center;
@@ -2374,7 +2401,9 @@
     .belmont-arsenal__trial, .belmont-arsenal__note { grid-column: d4-1 / d3-3; }
   }
   @media (max-width: 47.99em) {
-    .belmont-weapon__name { font-size: 0.8rem; }
+    /* cinco en fila no caben: «Cronómetro» se partía sílaba a sílaba. En el móvil, tres y dos, y sin cortar palabras */
+    .belmont-arsenal__list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .belmont-weapon__name { font-size: min(0.8rem, 11.5cqi); hyphens: manual; overflow-wrap: normal; } /* se encoge con el botón: cabe hasta en 320 px */
     .belmont-weapon__pill { display: none; }
   }
 }
@@ -2424,4 +2453,43 @@
   .belmont-arsenal__entryicon { color: var(--belmont-wax); }
   .belmont-arsenal__entryicon svg { display: block; inline-size: 100%; block-size: auto; }
   @media (min-width: 64em) { .belmont-arsenal__log { grid-column: d4-1 / d3-3; } }
+}
+
+/* ── Versión ligera (móvil): sin 3D (lo decide belmont.js) y sin los efectos que más cuesta pintar ──
+   Filtros de desenfoque y sombra sobre capas grandes o que se mueven, fusiones de capa a pantalla completa
+   y desenfoques de fondo: en un móvil se repintan en cada fotograma del scroll. Se quedan los pequeños y estáticos. */
+@layer syx.app {
+  .is-lite .belmont-page::after, .is-lite .belmont-lantern, .is-lite .belmont-dust { display: none; }
+  .is-lite :is(.belmont-depth--far, .belmont-depth--mid, .belmont-forest__layer--far, .belmont-forest__fog, .belmont-clock__layer--far, .belmont-clock__layer--mid, .belmont-clock__layer--near, .belmont-beams span, .belmont-fogfront, .belmont-letter__quill, .belmont-clock__svg, .belmont-atlas__route, .belmont-atlas__node.is-lit circle, .belmont-chandelier__svg, .belmont-route path, .belmont-climber, .belmont-title__main, .belmont-hero__numeral) { filter: none; }
+  .is-lite .belmont-letter::before { filter: none; } /* un pseudoelemento no cabe dentro de :is() */
+  .is-lite .belmont-clock__layer--near { opacity: 0.45; } /* sin el desenfoque, se aparta con transparencia */
+  .is-lite :is(.belmont-mode7__card, .belmont-forest__card) { backdrop-filter: none; background: color-mix(in oklch, var(--belmont-bg-deep) 94%, transparent); }
+  .is-lite :is(.belmont-beams, .belmont-hero__flash) { mix-blend-mode: normal; opacity: 0.5; }
+}
+
+/* ── Sonido: interruptores (pantalla de inicio, HUD, banda sonora) y reproductor ── */
+@layer syx.app {
+  .belmont-sound {
+    display: inline-flex; align-items: center; gap: var(--belmont-micro);
+    padding: var(--belmont-micro) var(--belmont-inner);
+    border: var(--belmont-border) solid var(--belmont-line);
+    background: color-mix(in oklch, var(--belmont-bg-deep) 70%, transparent);
+    color: var(--belmont-ink-soft);
+    font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); line-height: var(--belmont-leading);
+    cursor: pointer;
+  }
+  .belmont-sound[aria-pressed="true"] { border-color: var(--belmont-wax); color: var(--belmont-wax); }
+  .belmont-sound:focus-visible { outline: var(--belmont-border-thick) solid var(--belmont-wax); outline-offset: 2px; }
+  .belmont-intro__sound { margin-block-start: calc(var(--belmont-gutter) * -0.5); }
+  .belmont-hud__sound { padding: 0 var(--belmont-micro); border-color: transparent; background: none; pointer-events: auto; }
+  .belmont-hud__sound[aria-pressed="true"] { border-color: transparent; }
+  .belmont-hud__sound-state { font-size: 0.85em; }
+  .belmont-hud__sound:not([aria-pressed="true"]) [aria-hidden="true"] { opacity: 0.55; text-decoration: line-through; } /* apagado: la nota tachada */
+  @media (max-width: 29.99em) { .belmont-hud__sound-state { display: none; } }
+  @media (max-width: 21.99em) { .belmont-hud, .belmont-hud__group { gap: var(--belmont-inner); } } /* a 320 px, el HUD con el botón de sonido no cabía por 13 px */ /* en el móvil estrecho basta la nota: el HUD no cabe con la palabra */
+  .is-sound .belmont-hud__sound [aria-hidden="true"] { animation: belmont-blink calc(var(--belmont-blink) * 2) steps(2, jump-none) infinite; } /* la nota late mientras suena */
+  .belmont-music__player { display: flex; flex-wrap: wrap; align-items: center; gap: var(--belmont-inner) var(--belmont-gutter); margin-block-start: var(--belmont-padding); }
+  .belmont-music__midi { color: var(--belmont-wax); font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); }
+  .belmont-music__note { margin-block-start: var(--belmont-inner); max-inline-size: var(--belmont-measure); color: var(--belmont-ink-mute); font-size: var(--semantic-font-size-body-sm); font-style: italic; }
+  @media (prefers-reduced-motion: reduce) { .is-sound .belmont-hud__sound [aria-hidden="true"] { animation: none; } }
 }

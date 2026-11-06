@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Super Castlevania IV — La noche de 1691</title>
+  <meta name="description" content="Homenaje visual a Super Castlevania IV (Konami, Super Nintendo, 1991): el látigo en ocho direcciones, las once fases, el Modo 7 y su música.">
+  <link rel="preload" href="fonts/cinzel-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/eb-garamond-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/syx.css">
+  <link rel="stylesheet" href="vendor/lenis.css">
+  <link rel="stylesheet" href="css/belmont.css">
+  <!-- precarga: el navegador pide ya todos los módulos de arranque a la vez, en vez de descubrirlos en cadena (los modelos no: competirían con lo que pinta la pantalla de inicio) -->
+  <link rel="modulepreload" href="js/belmont.js">
+  <link rel="modulepreload" href="js/syx-colors.js">
+  <link rel="modulepreload" href="js/criaturas.js">
+  <link rel="modulepreload" href="js/rutas.js">
+  <link rel="modulepreload" href="js/bocetos.js">
+  <link rel="modulepreload" href="js/atlas.js">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three-belmont.js", "three/addons/loaders/GLTFLoader.js": "./vendor/three/three-belmont.js", "three/addons/environments/RoomEnvironment.js": "./vendor/three/three-belmont.js", "three/addons/utils/BufferGeometryUtils.js": "./vendor/three/three-belmont.js", "three/addons/utils/SkeletonUtils.js": "./vendor/three/three-belmont.js", "three/addons/libs/meshopt_decoder.module.js": "./vendor/three/three-belmont.js" } }
+  </script>
+</head>
+<body class="belmont-page">
+  <a class="belmont-skip" href="#prologo">Saltar al contenido</a>
+  <canvas class="belmont-gl" data-gl aria-hidden="true"></canvas>
+  <canvas class="belmont-icons" data-icons aria-hidden="true"></canvas>
+  <svg class="belmont-defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="belmont-oro" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="400" y2="520">
+        <stop offset="0" class="belmont-defs__oro-1"/><stop offset="0.45" class="belmont-defs__oro-2"/><stop offset="0.55" class="belmont-defs__oro-3"/><stop offset="1" class="belmont-defs__oro-4"/>
+      </linearGradient>
+      <radialGradient id="belmont-hierro" cx="0.35" cy="0.3" r="0.9">
+        <stop offset="0" class="belmont-defs__hierro-1"/><stop offset="0.6" class="belmont-defs__hierro-2"/><stop offset="1" class="belmont-defs__hierro-3"/>
+      </radialGradient>
+    </defs>
+  </svg>
+  <div class="belmont-lantern" data-lantern aria-hidden="true"></div>
+
+  <!-- Intro -->
+  <div class="belmont-intro" data-intro hidden>
+    <span class="belmont-intro__curtain belmont-intro__curtain--l" data-curtain></span>
+    <span class="belmont-intro__curtain belmont-intro__curtain--r" data-curtain></span>
+    <p class="belmont-intro__brand">✠ Transilvania · 1691 ✠</p>
+    <button class="belmont-intro__start" type="button" data-start>PUSH START</button>
+    <p class="belmont-intro__note">Homenaje no oficial. Pulsa el botón, cualquier tecla o desplázate para entrar.</p>
+  </div>
+
+  <!-- HUD -->
+  <div class="belmont-hud" aria-hidden="true">
+    <div class="belmont-hud__group">
+      <span><span class="belmont-hud__label">SCORE-</span><span data-score>000000</span></span>
+      <span class="belmont-hud__label">STAGE <span data-stage>01</span></span>
+    </div>
+    <div class="belmont-hud__bars">
+      <span class="belmont-hud__bar"><span class="belmont-hud__label">PLAYER</span><span class="belmont-hud__meter"><span class="belmont-hud__fill" data-player></span></span></span>
+      <span class="belmont-hud__bar"><span class="belmont-hud__label">ENEMY</span><span class="belmont-hud__meter"><span class="belmont-hud__fill belmont-hud__fill--enemy" data-enemy></span></span></span>
+    </div>
+    <div class="belmont-hud__group">
+      <span class="belmont-hud__sub" data-hud-sub title="Arma secundaria"></span>
+      <span class="belmont-hud__heart">♥-<span data-hearts>05</span></span>
+      <span class="belmont-hud__label belmont-hud__time">TIME <span data-time>0500</span></span>
+    </div>
+  </div>
+
+  <p class="belmont-toast" data-toast role="status" aria-live="polite"></p>
+  <main>
+    <!-- 1 · HERO -->
+    <header class="belmont-hero" data-hero data-stage-id="01">
+      <canvas class="belmont-hero__sky" data-sky aria-hidden="true"></canvas>
+      <div class="belmont-hero__moon" data-moon aria-hidden="true"></div>
+      <div data-layer="far"><svg class="belmont-hero__castle belmont-hero__castle--far" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0,420 L0,270 L0,211 L0,211 L9,211 L9,219 L17,219 L17,211 L26,211 L26,219 L34,219 L34,211 L43,211 L43,219 L51,219 L51,211 L60,211 L60,270 L63,270 L63,270 L63,125 L63,125 L72,125 L72,133 L81,133 L81,125 L89,125 L89,133 L98,133 L98,125 L107,125 L107,270 L130,270 L130,270 L130,223 L168,196 L207,223 L207,270 L220,270 L220,270 L220,219 L220,219 L228,219 L228,227 L237,227 L237,219 L245,219 L245,227 L254,227 L254,219 L262,219 L262,270 L266,270 L266,270 L266,219 L266,219 L277,219 L277,227 L288,227 L288,219 L299,219 L299,227 L310,227 L310,219 L321,219 L321,270 L324,270 L324,270 L324,215 L362,188 L400,215 L400,270 L440,270 L440,270 L440,156 L480,128 L520,156 L520,270 L556,270 L556,270 L556,180 L594,140 L633,180 L633,270 L647,270 L647,270 L647,159 L668,144 L689,159 L689,270 L707,270 L707,270 L707,212 L707,212 L716,212 L716,220 L726,220 L726,212 L735,212 L735,220 L745,220 L745,212 L754,212 L754,220 L764,220 L764,212 L773,212 L773,270 L809,270 L809,270 L809,159 L838,138 L868,159 L868,270 L879,270 L879,270 L879,156 L879,156 L888,156 L888,164 L897,164 L897,156 L907,156 L907,164 L916,164 L916,156 L925,156 L925,270 L937,270 L937,270 L937,218 L937,218 L946,218 L946,226 L955,226 L955,218 L964,218 L964,226 L973,226 L973,218 L982,218 L982,226 L991,226 L991,218 L1000,218 L1000,270 L1004,270 L1004,270 L1004,223 L1004,223 L1012,223 L1012,231 L1021,231 L1021,223 L1029,223 L1029,231 L1038,231 L1038,223 L1046,223 L1046,231 L1055,231 L1055,223 L1063,223 L1063,231 L1072,231 L1072,223 L1080,223 L1080,270 L1111,270 L1111,270 L1111,162 L1111,162 L1120,162 L1120,170 L1129,170 L1129,162 L1139,162 L1139,170 L1148,170 L1148,162 L1157,162 L1157,170 L1166,170 L1166,162 L1176,162 L1176,170 L1185,170 L1185,162 L1194,162 L1194,270 L1214,270 L1214,270 L1214,156 L1248,132 L1283,156 L1283,270 L1306,270 L1306,270 L1306,199 L1336,178 L1365,199 L1365,270 L1380,270 L1380,270 L1380,157 L1402,106 L1425,157 L1425,270 L1456,270 L1440,270 L1440,420 Z"/></svg></div>
+      <div data-layer="mid"><svg class="belmont-hero__castle belmont-hero__castle--mid" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0,420 L0,350 L0,183 L0,183 L8,183 L8,191 L16,191 L16,183 L24,183 L24,191 L32,191 L32,183 L39,183 L39,191 L47,191 L47,183 L55,183 L55,191 L63,191 L63,183 L71,183 L71,350 L101,350 L101,350 L101,169 L140,142 L178,169 L178,350 L211,350 L211,350 L211,290 L251,263 L291,290 L291,350 L318,350 L318,350 L318,253 L347,233 L376,253 L376,350 L378,350 L378,350 L378,186 L378,186 L386,186 L386,194 L394,194 L394,186 L402,186 L402,194 L410,194 L410,186 L418,186 L418,194 L426,194 L426,186 L435,186 L435,194 L443,194 L443,186 L451,186 L451,194 L459,194 L459,186 L467,186 L467,194 L475,194 L475,186 L483,186 L483,350 L517,350 L517,350 L517,261 L517,261 L525,261 L525,269 L532,269 L532,261 L540,261 L540,269 L547,269 L547,261 L555,261 L555,269 L562,269 L562,261 L570,261 L570,269 L577,269 L577,261 L585,261 L585,269 L592,269 L592,261 L600,261 L600,269 L607,269 L607,261 L615,261 L615,269 L622,269 L622,261 L630,261 L630,350 L631,350 L631,350 L631,268 L666,231 L700,268 L700,350 L729,350 L729,350 L729,149 L729,149 L737,149 L737,157 L745,157 L745,149 L752,149 L752,157 L760,157 L760,149 L768,149 L768,157 L776,157 L776,149 L783,149 L783,157 L791,157 L791,149 L799,149 L799,350 L810,350 L810,350 L810,170 L837,151 L864,170 L864,350 L877,350 L877,350 L877,259 L877,259 L885,259 L885,267 L894,267 L894,259 L902,259 L902,267 L911,267 L911,259 L919,259 L919,267 L928,267 L928,259 L936,259 L936,350 L948,350 L948,350 L948,253 L994,220 L1041,253 L1041,350 L1069,350 L1069,350 L1069,192 L1126,121 L1183,192 L1183,350 L1184,350 L1184,350 L1184,250 L1184,250 L1193,250 L1193,258 L1201,258 L1201,250 L1210,250 L1210,258 L1219,258 L1219,250 L1228,250 L1228,258 L1236,258 L1236,250 L1245,250 L1245,350 L1276,350 L1276,350 L1276,165 L1301,82 L1326,165 L1326,350 L1340,350 L1340,350 L1340,148 L1385,116 L1430,148 L1430,350 L1440,350 L1440,350 L1440,420 Z"/><rect class="belmont-hero__window" x="136" y="181" width="6" height="12"/><rect class="belmont-hero__window" x="136" y="207" width="6" height="12"/><rect class="belmont-hero__window" x="136" y="233" width="6" height="12"/><rect class="belmont-hero__window" x="344" y="265" width="6" height="12"/><rect class="belmont-hero__window" x="428" y="198" width="6" height="12"/><rect class="belmont-hero__window" x="428" y="224" width="6" height="12"/><rect class="belmont-hero__window" x="761" y="161" width="6" height="12"/><rect class="belmont-hero__window" x="834" y="182" width="6" height="12"/><rect class="belmont-hero__window" x="904" y="271" width="6" height="12"/><rect class="belmont-hero__window" x="904" y="297" width="6" height="12"/><rect class="belmont-hero__window" x="992" y="265" width="6" height="12"/><rect class="belmont-hero__window" x="992" y="291" width="6" height="12"/><rect class="belmont-hero__window" x="1123" y="204" width="6" height="12"/><rect class="belmont-hero__window" x="1123" y="230" width="6" height="12"/><rect class="belmont-hero__window" x="1298" y="177" width="6" height="12"/><rect class="belmont-hero__window" x="1298" y="203" width="6" height="12"/><rect class="belmont-hero__window" x="1298" y="229" width="6" height="12"/><rect class="belmont-hero__window" x="1382" y="160" width="6" height="12"/><rect class="belmont-hero__window" x="1382" y="186" width="6" height="12"/><rect class="belmont-hero__window" x="1382" y="212" width="6" height="12"/></svg></div>
+      <div class="belmont-hero__fog" aria-hidden="true"></div>
+      <div data-layer="near"><svg class="belmont-hero__castle belmont-hero__castle--near" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0,420 L0,420 L0,325 L0,325 L8,325 L8,333 L15,333 L15,325 L23,325 L23,333 L31,333 L31,325 L38,325 L38,333 L46,333 L46,325 L54,325 L54,333 L62,333 L62,325 L69,325 L69,333 L77,333 L77,325 L85,325 L85,333 L92,333 L92,325 L100,325 L100,420 L140,420 L140,420 L140,392 L212,342 L284,392 L284,420 L314,420 L314,420 L314,330 L366,290 L417,330 L417,420 L447,420 L447,420 L447,330 L447,330 L455,330 L455,338 L463,338 L463,330 L472,330 L472,338 L480,338 L480,330 L488,330 L488,338 L496,338 L496,330 L504,330 L504,338 L512,338 L512,330 L521,330 L521,338 L529,338 L529,330 L537,330 L537,338 L545,338 L545,330 L553,330 L553,338 L561,338 L561,330 L570,330 L570,338 L578,338 L578,330 L586,330 L586,420 L595,420 L595,420 L595,319 L644,274 L694,319 L694,420 L718,420 L718,420 L718,315 L754,290 L789,315 L789,420 L808,420 L808,420 L808,366 L808,366 L816,366 L816,374 L824,374 L824,366 L832,366 L832,374 L840,374 L840,366 L849,366 L849,374 L857,374 L857,366 L865,366 L865,374 L873,374 L873,366 L881,366 L881,420 L905,420 L905,420 L905,350 L967,307 L1029,350 L1029,420 L1052,420 L1052,420 L1052,396 L1093,385 L1134,396 L1134,420 L1174,420 L1174,420 L1174,347 L1174,347 L1182,347 L1182,355 L1191,355 L1191,347 L1199,347 L1199,355 L1207,355 L1207,347 L1216,347 L1216,355 L1224,355 L1224,347 L1232,347 L1232,355 L1240,355 L1240,347 L1249,347 L1249,355 L1257,355 L1257,347 L1265,347 L1265,355 L1274,355 L1274,347 L1282,347 L1282,420 L1316,420 L1316,420 L1316,348 L1316,348 L1324,348 L1324,356 L1331,356 L1331,348 L1339,348 L1339,356 L1346,356 L1346,348 L1354,348 L1354,356 L1361,356 L1361,348 L1369,348 L1369,356 L1377,356 L1377,348 L1384,348 L1384,356 L1392,356 L1392,348 L1399,348 L1399,356 L1407,356 L1407,348 L1415,348 L1415,356 L1422,356 L1422,348 L1430,348 L1430,356 L1437,356 L1437,348 L1445,348 L1445,356 L1452,356 L1452,348 L1460,348 L1460,420 L1461,420 L1440,420 L1440,420 Z"/><rect class="belmont-hero__window" x="47" y="337" width="6" height="12"/><rect class="belmont-hero__window" x="750" y="327" width="6" height="12"/><rect class="belmont-hero__window" x="964" y="362" width="6" height="12"/><rect class="belmont-hero__window" x="1225" y="359" width="6" height="12"/></svg></div>
+      <div class="belmont-hero__flash" data-flash aria-hidden="true"></div>
+      <svg class="belmont-hero__drip" data-drip aria-hidden="true" focusable="false">
+        <defs>
+          <filter id="belmont-goo" x="-10%" y="-10%" width="120%" height="140%"><feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/><feColorMatrix in="b" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" result="g"/><feComposite in="SourceGraphic" in2="g" operator="atop"/></filter>
+          <linearGradient id="belmont-sangre" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--belmont-blood-deep)"/><stop offset="0.55" stop-color="var(--belmont-blood)"/><stop offset="1" stop-color="var(--belmont-blood-deep)"/></linearGradient>
+        </defs>
+        <g class="belmont-hero__goo" data-goo filter="url(#belmont-goo)" fill="url(#belmont-sangre)"></g>
+        <g class="belmont-hero__shine" data-shine></g>
+      </svg>
+
+      <div class="belmont-hero__inner belmont-grid">
+        <p class="belmont-hero__numeral" aria-hidden="true" data-numeral>IV</p>
+        <div class="belmont-hero__copy" data-hero-copy>
+          <p class="belmont-hero__over">KONAMI · SUPER NINTENDO · 1991</p>
+          <h1 class="belmont-title">
+            <span class="belmont-title__super" data-title-super>Super</span>
+            <span class="belmont-title__main" data-title-main>Castlevania</span><span class="syx-sr-only"> IV</span>
+          </h1>
+          <p class="belmont-hero__tag">Un cazador, un látigo y la noche más larga de Transilvania, contados otra vez en dieciséis bits.</p>
+          <p class="belmont-hero__cue">DESCIENDE</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- 2 · PRÓLOGO -->
+    <section class="belmont-section belmont-grid belmont-prologue" id="prologo" data-stage-id="02" aria-labelledby="prologo-t" tabindex="-1">
+      <svg class="belmont-route belmont-route--back" data-blood-route aria-hidden="true" focusable="false"><path data-blood-path/></svg>
+      <div class="belmont-route belmont-route--front" aria-hidden="true"><span class="belmont-drop-blood" data-blood-drop></span></div>
+      <div class="belmont-prologue__head">
+        <p class="belmont-kicker">Prólogo</p>
+        <h2 class="belmont-h3" id="prologo-t">Cada cien años</h2>
+      </div>
+      <article class="belmont-letter" data-letter aria-labelledby="prologo-t">
+        <p class="belmont-letter__date" data-letter-line>Transilvania, víspera de Todos los Santos del año de 1691</p>
+        <p class="belmont-letter__to" data-letter-line>A Simon Belmont, heredero del látigo:</p>
+        <div class="belmont-letter__body">
+          <p data-letter-line><span class="belmont-letter__cap">C</span>ada cien años, cuando la fe de los hombres flaquea, el conde <strong>Drácula</strong> vuelve de entre los muertos. Las campanas han callado y la luna sale roja sobre el castillo: ha vuelto.</p>
+          <p data-letter-line>Esta vez os toca a vos, último de un linaje de cazadores, cruzar sus puertas con el látigo de vuestra familia. Partid antes de que se apague la última vela.</p>
+          <p class="belmont-letter__ps" data-letter-line>P. D.: Cuentan los juglares que esta historia no sigue a las anteriores, sino que vuelve a contarla desde el principio en una máquina nueva de dieciséis bits. La llaman <em>Super Castlevania IV</em>.</p>
+        </div>
+        <p class="belmont-letter__sign" data-letter-line>Los ancianos de la villa</p>
+        <span class="belmont-letter__seal" data-letter-seal aria-hidden="true"><span>B</span></span>
+        <span class="belmont-letter__quill" data-letter-quill aria-hidden="true"><svg viewBox="0 0 40 120" focusable="false"><path class="belmont-letter__vane" d="M4 118C6 92 12 60 22 34 28 18 34 8 38 2 36 14 34 30 30 46 26 64 18 88 4 118Z"/><path class="belmont-letter__shaft" d="M4 118Q20 60 38 2"/><path class="belmont-letter__barbs" d="M12 92l-6-4M15 82l-7-3M18 72l-8-2M21 62l-8-1M24 52l-7 0M27 42l-6 1M30 32l-5 2M22 64l9 2M26 50l8 2M29 38l7 2"/></svg></span>
+      </article>
+    </section>
+
+    <!-- 3 · EL LÁTIGO (retícula polar) -->
+    <section class="belmont-section belmont-grid belmont-whip" data-stage-id="03" aria-labelledby="latigo-t">
+      <div class="belmont-whip__visual">
+        <div class="belmont-rose" data-rose tabindex="0" role="group" aria-label="Látigo: apunta con el ratón o las flechas y azota con clic o Intro" aria-describedby="rose-dir"><svg viewBox="-110 -110 220 220" role="img" aria-labelledby="rose-title"><title id="rose-title">Rosa de ocho direcciones del látigo</title><circle class="belmont-rose__ring" r="28" stroke-width="0.6"/><circle class="belmont-rose__ring" r="58" stroke-width="0.6"/><circle class="belmont-rose__ring" r="88" stroke-width="0.6"/><line class="belmont-rose__ring" x1="0.0" y1="-28.0" x2="0.0" y2="-88.0" stroke-width="0.3"/><line class="belmont-rose__ring" x1="10.7" y1="-25.9" x2="33.7" y2="-81.3" stroke-width="0.3"/><line class="belmont-rose__ring" x1="19.8" y1="-19.8" x2="62.2" y2="-62.2" stroke-width="0.3"/><line class="belmont-rose__ring" x1="25.9" y1="-10.7" x2="81.3" y2="-33.7" stroke-width="0.3"/><line class="belmont-rose__ring" x1="28.0" y1="0.0" x2="88.0" y2="0.0" stroke-width="0.3"/><line class="belmont-rose__ring" x1="25.9" y1="10.7" x2="81.3" y2="33.7" stroke-width="0.3"/><line class="belmont-rose__ring" x1="19.8" y1="19.8" x2="62.2" y2="62.2" stroke-width="0.3"/><line class="belmont-rose__ring" x1="10.7" y1="25.9" x2="33.7" y2="81.3" stroke-width="0.3"/><line class="belmont-rose__ring" x1="0.0" y1="28.0" x2="0.0" y2="88.0" stroke-width="0.3"/><line class="belmont-rose__ring" x1="-10.7" y1="25.9" x2="-33.7" y2="81.3" stroke-width="0.3"/><line class="belmont-rose__ring" x1="-19.8" y1="19.8" x2="-62.2" y2="62.2" stroke-width="0.3"/><line class="belmont-rose__ring" x1="-25.9" y1="10.7" x2="-81.3" y2="33.7" stroke-width="0.3"/><line class="belmont-rose__ring" x1="-28.0" y1="0.0" x2="-88.0" y2="0.0" stroke-width="0.3"/><line class="belmont-rose__ring" x1="-25.9" y1="-10.7" x2="-81.3" y2="-33.7" stroke-width="0.3"/><line class="belmont-rose__ring" x1="-19.8" y1="-19.8" x2="-62.2" y2="-62.2" stroke-width="0.3"/><line class="belmont-rose__ring" x1="-10.7" y1="-25.9" x2="-33.7" y2="-81.3" stroke-width="0.3"/><polyline class="belmont-rose__ray" data-ray points="0.0,-12.0 1.4,-15.7 2.3,-19.4 2.7,-23.1 2.4,-26.8 1.7,-30.5 0.7,-34.2 -0.3,-37.9 -1.1,-41.6 -1.6,-45.3 -1.6,-49.0 -1.3,-52.7 -0.8,-56.4 -0.2,-60.1 0.3,-63.8 0.6,-67.5 0.6,-71.2 0.5,-74.9 0.3,-78.6 0.1,-82.3 0.0,-86.0" stroke-width="2.4"/><text class="belmont-rose__label" x="0.0" y="-98.0" text-anchor="middle">N</text><polyline class="belmont-rose__ray" data-ray points="8.5,-8.5 12.1,-10.1 15.4,-12.1 18.2,-14.4 20.7,-17.2 22.8,-20.4 24.7,-23.7 26.6,-27.0 28.6,-30.2 30.9,-33.1 33.5,-35.8 36.4,-38.2 39.3,-40.4 42.4,-42.6 45.3,-44.9 48.1,-47.3 50.8,-49.9 53.3,-52.6 55.8,-55.4 58.2,-58.1 60.8,-60.8" stroke-width="1.4"/><text class="belmont-rose__label" x="70.7" y="-68.7" text-anchor="middle">NE</text><polyline class="belmont-rose__ray" data-ray points="12.0,0.0 15.7,1.4 19.4,2.3 23.1,2.7 26.8,2.4 30.5,1.7 34.2,0.7 37.9,-0.3 41.6,-1.1 45.3,-1.6 49.0,-1.6 52.7,-1.3 56.4,-0.8 60.1,-0.2 63.8,0.3 67.5,0.6 71.2,0.6 74.9,0.5 78.6,0.3 82.3,0.1 86.0,0.0" stroke-width="2.4"/><text class="belmont-rose__label" x="100.0" y="2.0" text-anchor="middle">E</text><polyline class="belmont-rose__ray" data-ray points="8.5,8.5 10.1,12.1 12.1,15.4 14.4,18.2 17.2,20.7 20.4,22.8 23.7,24.7 27.0,26.6 30.2,28.6 33.1,30.9 35.8,33.5 38.2,36.4 40.4,39.3 42.6,42.4 44.9,45.3 47.3,48.1 49.9,50.8 52.6,53.3 55.4,55.8 58.1,58.2 60.8,60.8" stroke-width="1.4"/><text class="belmont-rose__label" x="70.7" y="72.7" text-anchor="middle">SE</text><polyline class="belmont-rose__ray" data-ray points="0.0,12.0 -1.4,15.7 -2.3,19.4 -2.7,23.1 -2.4,26.8 -1.7,30.5 -0.7,34.2 0.3,37.9 1.1,41.6 1.6,45.3 1.6,49.0 1.3,52.7 0.8,56.4 0.2,60.1 -0.3,63.8 -0.6,67.5 -0.6,71.2 -0.5,74.9 -0.3,78.6 -0.1,82.3 0.0,86.0" stroke-width="2.4"/><text class="belmont-rose__label" x="0.0" y="102.0" text-anchor="middle">S</text><polyline class="belmont-rose__ray" data-ray points="-8.5,8.5 -12.1,10.1 -15.4,12.1 -18.2,14.4 -20.7,17.2 -22.8,20.4 -24.7,23.7 -26.6,27.0 -28.6,30.2 -30.9,33.1 -33.5,35.8 -36.4,38.2 -39.3,40.4 -42.4,42.6 -45.3,44.9 -48.1,47.3 -50.8,49.9 -53.3,52.6 -55.8,55.4 -58.2,58.1 -60.8,60.8" stroke-width="1.4"/><text class="belmont-rose__label" x="-70.7" y="72.7" text-anchor="middle">SO</text><polyline class="belmont-rose__ray" data-ray points="-12.0,0.0 -15.7,-1.4 -19.4,-2.3 -23.1,-2.7 -26.8,-2.4 -30.5,-1.7 -34.2,-0.7 -37.9,0.3 -41.6,1.1 -45.3,1.6 -49.0,1.6 -52.7,1.3 -56.4,0.8 -60.1,0.2 -63.8,-0.3 -67.5,-0.6 -71.2,-0.6 -74.9,-0.5 -78.6,-0.3 -82.3,-0.1 -86.0,0.0" stroke-width="2.4"/><text class="belmont-rose__label" x="-100.0" y="2.0" text-anchor="middle">O</text><polyline class="belmont-rose__ray" data-ray points="-8.5,-8.5 -10.1,-12.1 -12.1,-15.4 -14.4,-18.2 -17.2,-20.7 -20.4,-22.8 -23.7,-24.7 -27.0,-26.6 -30.2,-28.6 -33.1,-30.9 -35.8,-33.5 -38.2,-36.4 -40.4,-39.3 -42.6,-42.4 -44.9,-45.3 -47.3,-48.1 -49.9,-50.8 -52.6,-53.3 -55.4,-55.8 -58.1,-58.2 -60.8,-60.8" stroke-width="1.4"/><text class="belmont-rose__label" x="-70.7" y="-68.7" text-anchor="middle">NO</text><g class="belmont-rose__aim" data-whip-aim><path data-whip-lash d="M12,0 C34,-10 58,8 92,0"/><circle data-whip-tip cx="92" cy="0" r="3"/></g><g data-rose-core><polygon class="belmont-rose__core" points="0,-12 12,0 0,12 -12,0"/><circle r="4" fill="currentColor"/></g></svg><div class="belmont-rose__targets" data-whip-targets aria-hidden="true"></div></div>
+        <p class="belmont-rose__readout" id="rose-dir" aria-live="polite">DIRECCIÓN <span data-whip-dir>E</span> · <span data-whip-hits>0</span> <span data-whip-hits-label>GOLPES</span></p>
+      </div>
+      <div class="belmont-whip__text">
+        <p class="belmont-kicker">El arma</p>
+        <h2 class="belmont-h2" id="latigo-t">Ocho <em>direcciones</em></h2>
+        <div class="belmont-prose">
+          <p>En los Castlevania de NES el látigo solo azotaba hacia delante. Aquí obedece a la cruceta en ocho direcciones, y eso cambia la forma de moverse por el castillo.</p>
+        </div>
+        <div class="belmont-trial" data-trial="latigo" data-trial-total="6">
+              <p class="belmont-trial__goal"><span class="belmont-trial__tag">Prueba</span> Derriba seis murciélagos antes de que huyan. Apunta con el ratón o con las flechas (dos a la vez para las diagonales) y azota con clic o Espacio. Si azotas hacia otro lado, se escapa.</p>
+              
+              <div class="belmont-trial__row"><p class="belmont-trial__state" data-trial-state aria-live="polite">0/6</p><button class="belmont-trial__skip" type="button" data-trial-skip>Saltar prueba</button></div>
+              <div class="belmont-trial__bar" aria-hidden="true"><span data-trial-meter></span></div>
+            </div>
+        <ol class="belmont-whip__list" data-sealed="latigo" aria-labelledby="latigo-aprendido">
+          <li class="belmont-whip__learned" id="latigo-aprendido" aria-hidden="false">Lo que acabas de aprender · sigue bajando</li>
+          <li class="belmont-whip__item" data-reveal><span class="belmont-whip__num">01</span><p><strong>Ocho ángulos.</strong> Arriba, abajo y en diagonal, también en pleno salto.</p></li>
+          <li class="belmont-whip__item" data-reveal><span class="belmont-whip__num">02</span><p><strong>Látigo suelto.</strong> Si mantienes el botón, cuelga flácido y se puede agitar para golpear y frenar proyectiles.</p></li>
+          <li class="belmont-whip__item" data-reveal><span class="belmont-whip__num">03</span><p><strong>Anillas.</strong> Se engancha a ellas para balancearse sobre los abismos.</p></li>
+          <li class="belmont-whip__item" data-reveal><span class="belmont-whip__num">04</span><p><strong>Dos mejoras.</strong> Del cuero a la cadena, y de la cadena a una más larga.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 4 · ONCE FASES (mapa de niveles fijado: la cámara sigue al cazador por el camino) -->
+    <section class="belmont-stages" data-stages data-stage-id="04" aria-labelledby="fases-t">
+      <div class="belmont-grid belmont-stages__head">
+        <div>
+          <p class="belmont-kicker">El mapa</p>
+          <h2 class="belmont-h2" id="fases-t">Once fases, <em>de la verja al trono</em></h2>
+          <p class="belmont-prose">Como en la pantalla del mapa del juego: cinco fases fuera del castillo y seis dentro, del 1 al 9 y después A y B. Baja y sigue al cazador por el camino.</p>
+        </div>
+      </div>
+      <div class="belmont-stages__pin" data-stages-pin>
+        <div class="belmont-atlas" data-atlas>
+          <div class="belmont-atlas__map" data-atlas-map aria-hidden="true"><svg viewBox="0 0 1600 1000" data-atlas-svg focusable="false"></svg></div>
+          <span class="belmont-atlas__marker" data-atlas-marker aria-hidden="true"><span class="belmont-icon3d belmont-icon3d--figura" data-icon3d="cazador" data-icon3d-modo="figura" data-facing="1"></span></span>
+          <ol class="belmont-atlas__cards" role="list" aria-label="Las once fases">
+            <li class="belmont-atlas__card" data-atlas-card>
+              <span class="belmont-atlas__art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 56V28a18 18 0 0 1 36 0v28M10 56h44M22 56V24M32 56V12M42 56V24M18 40h28"/></svg></span>
+              <span class="belmont-atlas__num">STAGE 1</span>
+              <h3 class="belmont-atlas__title">Las puertas</h3>
+              <p>Establos, verjas y un cementerio bajo la tormenta. El viaje empieza fuera del castillo.</p>
+            </li>
+          <li class="belmont-atlas__card" data-atlas-card>
+              <span class="belmont-atlas__art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 44 22 18l10 26zM30 44 42 12l12 32zM22 44v6M42 44v6M6 56q6-4 13 0t13 0t13 0t13 0"/></svg></span>
+              <span class="belmont-atlas__num">STAGE 2</span>
+              <h3 class="belmont-atlas__title">El bosque</h3>
+              <p>Troncos colgantes, un río y la primera prueba seria de saltos.</p>
+            </li>
+          <li class="belmont-atlas__card" data-atlas-card>
+              <span class="belmont-atlas__art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 30q26-28 52 0M14 30v10M26 22v12M38 22v8M50 30v14"/><path d="M6 50q6-4 13 0t13 0t13 0t13 0M6 58q6-4 13 0t13 0t13 0t13 0"/></svg></span>
+              <span class="belmont-atlas__num">STAGE 3</span>
+              <h3 class="belmont-atlas__title">Las aguas subterráneas</h3>
+              <p>Cascadas, cavernas y una ciudad hundida bajo la superficie.</p>
+            </li>
+          <li class="belmont-atlas__card" data-atlas-card>
+              <span class="belmont-atlas__art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="18"/><path d="M32 14v36M14 32h36M19 19l26 26M45 19 19 45"/><path d="M54 22a24 24 0 0 1-6 30M48 52l-1-7M48 52l7-2"/></svg></span>
+              <span class="belmont-atlas__num">STAGE 4</span>
+              <h3 class="belmont-atlas__title">La mansión de los trucos</h3>
+              <p>La sala gira: el Modo 7 voltea el nivel entero y un cilindro rueda bajo los pies.</p>
+            </li>
+          <li class="belmont-atlas__card" data-atlas-card>
+              <span class="belmont-atlas__art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 22 32 10l22 12zM12 22h40M16 22v30M27 22v30M37 22v30M48 22v30M10 52h44M8 58h48"/></svg></span>
+              <span class="belmont-atlas__num">STAGE 5</span>
+              <h3 class="belmont-atlas__title">La entrada</h3>
+              <p>Por fin dentro de los muros: patios, armaduras y escalinatas.</p>
+            </li>
+          <li class="belmont-atlas__card" data-atlas-card>
+              <span class="belmont-atlas__art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M32 6v12M12 28h40M12 28q20 18 40 0M16 28v-6M28 28v-6M36 28v-6M48 28v-6M32 38v8"/><path d="M16 22q-2-4 0-6q2 2 0 6M28 22q-2-4 0-6q2 2 0 6M36 22q-2-4 0-6q2 2 0 6M48 22q-2-4 0-6q2 2 0 6"/></svg></span>
+              <span class="belmont-atlas__num">STAGE 6</span>
+              <h3 class="belmont-atlas__title">El gran salón</h3>
+              <p>Lámparas de araña que se balancean sobre el vacío y un salón de baile encantado.</p>
+            </li>
+          <li class="belmont-atlas__card" data-atlas-card>
+              <span class="belmont-atlas__art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 56h48M12 56V16h8v40M20 56V22h8v34M30 56 34 18l8 1-4 37M44 56V12h8v44M14 24h4M22 30h4M46 20h4"/></svg></span>
+              <span class="belmont-atlas__num">STAGE 7</span>
+              <h3 class="belmont-atlas__title">El almacén</h3>
+              <p>Estanterías, cofres y salas atestadas de libros.</p>
+            </li>
+          <li class="belmont-atlas__card" data-atlas-card>
+              <span class="belmont-atlas__art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M24 6h16l8 14-8 38H24l-8-38z"/><path d="M32 18v20M25 25h14"/></svg></span>
+              <span class="belmont-atlas__num">STAGE 8</span>
+              <h3 class="belmont-atlas__title">Los pasadizos</h3>
+              <p>Catacumbas, ataúdes y el encuentro con la criatura de Frankenstein.</p>
+            </li>
+          <li class="belmont-atlas__card" data-atlas-card>
+              <span class="belmont-atlas__art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="22" cy="48" rx="12" ry="4"/><path d="M10 48v-6M34 48v-6"/><ellipse cx="22" cy="42" rx="12" ry="4"/><ellipse cx="42" cy="34" rx="12" ry="4"/><path d="M30 34v14q0 4 12 4t12-4V34"/><path d="M44 12l4 6 7 1-5 5 1 7-7-3-6 3 1-7-5-5 7-1z"/></svg></span>
+              <span class="belmont-atlas__num">STAGE 9</span>
+              <h3 class="belmont-atlas__title">El tesoro</h3>
+              <p>Montañas de oro y un murciélago gigante hecho de joyas.</p>
+            </li>
+          <li class="belmont-atlas__card" data-atlas-card>
+              <span class="belmont-atlas__art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="32" cy="26" r="18"/><path d="M32 14v12l8 5M32 44v12M26 56h12"/><circle cx="32" cy="56" r="0.5"/><path d="M32 8v-2M50 26h2M14 26h-2"/></svg></span>
+              <span class="belmont-atlas__num">STAGE A</span>
+              <h3 class="belmont-atlas__title">La torre del reloj</h3>
+              <p>Engranajes, péndulos y la escalada más vertical del juego.</p>
+            </li>
+          <li class="belmont-atlas__card" data-atlas-card>
+              <span class="belmont-atlas__art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 58V24h24v34M16 24h32M20 24l12-18 12 18M28 58V46a4 4 0 0 1 8 0v12M26 32h4M34 32h4"/><path d="M50 12q4-4 8 0q-2 0-4 3q-2-3-4-3z" fill="currentColor" stroke="none"/><path d="M4 18q4-4 8 0q-2 0-4 3q-2-3-4-3z" fill="currentColor" stroke="none"/></svg></span>
+              <span class="belmont-atlas__num">STAGE B</span>
+              <h3 class="belmont-atlas__title">La torre de Drácula</h3>
+              <p>Un puente que se desmorona, los últimos guardianes y el trono.</p>
+            </li>
+          </ol>
+          <p class="belmont-atlas__hint" aria-hidden="true">BAJA PARA SEGUIR EL CAMINO</p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 5 · EL CANDELABRO (vertical fijado · profundidad · mecánica de la fase 6) -->
+    <section class="belmont-chandelier-sec" data-chandelier-sec data-stage-id="06" aria-labelledby="candelabro-t">
+      <div class="belmont-chandelier-sec__pin" data-chandelier-pin>
+        <div class="belmont-depth belmont-depth--far" data-depth-layer="0.25" aria-hidden="true">
+          <span class="belmont-vitral"></span><span class="belmont-vitral"></span><span class="belmont-vitral"></span><span class="belmont-vitral"></span><span class="belmont-vitral"></span>
+        </div>
+        <div class="belmont-beams" data-depth-layer="0.4" aria-hidden="true"><span></span><span></span><span></span></div>
+        <canvas class="belmont-dust" data-dust aria-hidden="true"></canvas>
+        <div class="belmont-depth belmont-depth--mid" data-depth-layer="0.6" aria-hidden="true">
+          <span class="belmont-column"></span><span class="belmont-column"></span><span class="belmont-column"></span><span class="belmont-column"></span>
+        </div>
+        <div class="belmont-chandelier" data-chandelier>
+          <svg class="belmont-chandelier__svg" viewBox="0 0 400 520" aria-hidden="true" focusable="false">
+            <g fill="none" stroke="url(#belmont-oro)" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M200 0V232" stroke-width="7" stroke-dasharray="12 5"/>
+              <path d="M40 330Q200 470 360 330" stroke-width="7"/>
+              <path d="M62 308Q200 410 338 308" stroke-width="4"/>
+              <path d="M90 352Q200 430 310 352" stroke-width="3" stroke-dasharray="2 9"/>
+              <path d="M200 250Q120 260 40 330M200 250Q150 300 120 360M200 250V380M200 250Q250 300 280 360M200 250Q280 260 360 330" stroke-width="5"/>
+              <path d="M40 330q-14 8-6 24q10 10 18-4M360 330q14 8 6 24q-10 10-18-4" stroke-width="4"/>
+            </g>
+            <g fill="url(#belmont-oro)">
+              <circle cx="200" cy="248" r="20"/><circle cx="200" cy="248" r="9" class="belmont-chandelier__gem"/>
+              <path d="M200 380l-16 40h32z"/><path d="M196 420h8v54h-8z"/><circle cx="200" cy="490" r="15"/>
+              <circle cx="40" cy="330" r="7"/><circle cx="120" cy="360" r="7"/><circle cx="200" cy="380" r="7"/><circle cx="280" cy="360" r="7"/><circle cx="360" cy="330" r="7"/>
+            </g>
+          </svg>
+          <button class="belmont-candle" type="button" style="--belmont-x:10%;--belmont-y:57%" data-candle data-drop="corazón" aria-label="Romper vela 1"><span class="belmont-candle__flame"></span><span class="belmont-candle__wax"></span></button>
+          <button class="belmont-candle" type="button" style="--belmont-x:30%;--belmont-y:63%" data-candle data-drop="daga" aria-label="Romper vela 2"><span class="belmont-candle__flame"></span><span class="belmont-candle__wax"></span></button>
+          <button class="belmont-candle" type="button" style="--belmont-x:50%;--belmont-y:66%" data-candle data-drop="llave" aria-label="Romper vela 3"><span class="belmont-candle__flame"></span><span class="belmont-candle__wax"></span></button>
+          <button class="belmont-candle" type="button" style="--belmont-x:70%;--belmont-y:63%" data-candle data-drop="corazón" aria-label="Romper vela 4"><span class="belmont-candle__flame"></span><span class="belmont-candle__wax"></span></button>
+          <button class="belmont-candle" type="button" style="--belmont-x:90%;--belmont-y:57%" data-candle data-drop="corazón grande" aria-label="Romper vela 5"><span class="belmont-candle__flame"></span><span class="belmont-candle__wax"></span></button>
+        </div>
+        <div class="belmont-drops" data-drops aria-hidden="true"></div>
+        <div class="belmont-ledge" aria-hidden="true">
+          <span class="belmont-ledge__stone"></span>
+          <span class="belmont-simon" data-simon><svg class="belmont-simon__svg" viewBox="0 0 40 64" focusable="false"><path class="belmont-simon__cape" d="M20 10c-7 2-11 10-12 22l-5 24 11-8 6 12 6-12 11 8-5-24C31 20 27 12 20 10z"/><circle class="belmont-simon__head" cx="20" cy="8" r="5.5"/><path class="belmont-simon__body" d="M15 18h10l2 20h-4l-1 18h-4l-1-18h-4z"/><path class="belmont-simon__whip" d="M26 22q10 2 12 12t-6 18"/></svg><span class="belmont-icon3d belmont-icon3d--figura" data-icon3d="cazador" data-icon3d-modo="figura" data-facing="-1" aria-hidden="true"></span></span>
+        </div>
+        <div class="belmont-depth belmont-depth--near" data-depth-layer="1.5" aria-hidden="true">
+          <span class="belmont-drape belmont-drape--l"></span><span class="belmont-drape belmont-drape--r"></span>
+        </div>
+        <div class="belmont-grid belmont-chandelier-sec__copy">
+          <div class="belmont-chandelier-sec__card">
+            <p class="belmont-kicker">Fase 6 · El gran salón</p>
+            <h2 class="belmont-h2" id="candelabro-t">El <em>candelabro</em></h2>
+            <div class="belmont-prose">
+              <p>Lámparas de araña que se balancean sobre el vacío: hay que saltar en el momento justo o caer. Aquí el balanceo lo marca tu scroll.</p>
+            </div>
+            <div class="belmont-trial" data-trial="candelabro" data-trial-total="3">
+              <p class="belmont-trial__goal"><span class="belmont-trial__tag">Prueba</span> Salta tres veces al candelabro cuando pase por el centro (aguja en la franja). Si saltas a destiempo, caes.</p>
+              <div class="belmont-trial__gauge" aria-hidden="true"><span class="belmont-trial__zone"></span><span class="belmont-trial__needle" data-trial-needle></span></div>
+              <div class="belmont-trial__row"><button class="belmont-trial__act" type="button" data-trial-act>Saltar</button><p class="belmont-trial__state" data-trial-state aria-live="polite">0/3</p><button class="belmont-trial__skip" type="button" data-trial-skip>Saltar prueba</button></div>
+              <div class="belmont-trial__bar" aria-hidden="true"><span data-trial-meter></span></div>
+            </div>
+            <div class="belmont-sealed-block" data-sealed="candelabro">
+              <p class="belmont-prose"><strong>Rompe las velas</strong>: en el juego, de cada vela cae algo. Una de estas esconde una llave.</p>
+              <p class="belmont-chandelier-sec__count" aria-live="polite">Velas rotas: <span data-candles-count>0</span>/5 <span data-candles-msg></span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · EL BOSQUE (lateral · parallax de cinco planos) -->
+    <section class="belmont-forest" data-forest data-stage-id="02" aria-labelledby="bosque-t">
+      <div class="belmont-forest__pin" data-forest-pin>
+        <span class="belmont-forest__volador" data-forest-volador aria-hidden="true"><span class="belmont-icon3d belmont-icon3d--figura" data-icon3d="cazador" data-icon3d-modo="figura" data-facing="1"></span></span>
+        <div class="belmont-forest__moon" data-forest-layer="0.02" aria-hidden="true"></div>
+        <div class="belmont-forest__layer belmont-forest__layer--sky" data-forest-layer="0.08" aria-hidden="true"><svg class="belmont-forest__svg" viewBox="0 0 4000 400" preserveAspectRatio="xMinYMax slice" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0,400 L0,230 L100,297 L200,271 L300,265 L400,279 L500,207 L600,150 L700,191 L800,207 L900,201 L1000,274 L1100,316 L1200,260 L1300,237 L1400,238 L1500,171 L1600,146 L1700,216 L1800,243 L1900,240 L2000,298 L2100,305 L2200,224 L2300,199 L2400,207 L2500,160 L2600,171 L2700,259 L2800,277 L2900,260 L3000,293 L3100,269 L3200,179 L3300,172 L3400,201 L3500,179 L3600,214 L3700,299 L3800,291 L3900,251 L4000,263 L4000,400Z"/><path fill="currentColor" d="M3300,240 v-90 h14 v-40 l10,-30 l10,30 v40 h20 v-60 l12,-40 l12,40 v60 h18 v90z"/></svg></div>
+        <div class="belmont-forest__fog belmont-forest__fog--far" data-forest-layer="0.2" aria-hidden="true"></div>
+        <div class="belmont-forest__layer belmont-forest__layer--far" data-forest-layer="0.3" aria-hidden="true"><svg class="belmont-forest__svg" viewBox="0 0 4000 400" preserveAspectRatio="xMinYMax slice" aria-hidden="true" focusable="false"><path fill="currentColor" d="M21,400 L24,195 L30,195 L32,400ZM203,400 L205,235 L211,235 L213,400ZM325,400 L328,277 L334,277 L336,400ZM546,400 L548,280 L553,280 L555,400ZM687,400 L690,185 L696,185 L699,400ZM800,400 L803,226 L809,226 L812,400ZM943,400 L945,238 L948,238 L950,400ZM1115,400 L1117,230 L1121,230 L1123,400ZM1256,400 L1258,234 L1262,234 L1264,400ZM1486,400 L1489,224 L1494,224 L1496,400ZM1741,400 L1743,194 L1747,194 L1748,400ZM1953,400 L1956,209 L1962,209 L1964,400ZM2184,400 L2186,213 L2191,213 L2193,400ZM2421,400 L2423,195 L2428,195 L2431,400ZM2534,400 L2537,256 L2543,256 L2546,400ZM2669,400 L2672,225 L2677,225 L2680,400ZM2833,400 L2835,236 L2840,236 L2843,400ZM3018,400 L3020,241 L3025,241 L3027,400ZM3132,400 L3135,210 L3141,210 L3144,400ZM3300,400 L3302,263 L3307,263 L3309,400ZM3520,400 L3523,226 L3528,226 L3531,400ZM3704,400 L3707,185 L3712,185 L3714,400ZM3852,400 L3855,225 L3861,225 L3864,400ZM0,400 L0,386 Q100,361 200,386 Q300,359 400,386 Q500,363 600,386 Q700,361 800,386 Q900,370 1000,386 Q1100,369 1200,386 Q1300,373 1400,386 Q1500,384 1600,386 Q1700,359 1800,386 Q1900,369 2000,386 Q2100,380 2200,386 Q2300,370 2400,386 Q2500,371 2600,386 Q2700,375 2800,386 Q2900,375 3000,386 Q3100,369 3200,386 Q3300,367 3400,386 Q3500,367 3600,386 Q3700,372 3800,386 Q3900,385 4000,386 L4000,400Z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M27,252 q-12,-5 -24,-13 M27,283 q-20,-8 -39,-22 M27,293 q-22,-9 -44,-24 M27,262 q-25,-10 -49,-27 M27,224 q17,-7 34,-19 M208,298 q25,-10 51,-28 M208,316 q-15,-6 -30,-16 M208,290 q-15,-6 -31,-17 M208,290 q25,-10 50,-27 M208,259 q-12,-5 -25,-13 M331,292 q27,-11 53,-29 M331,345 q25,-10 49,-27 M331,335 q-14,-6 -29,-16 M331,292 q-27,-11 -54,-30 M331,302 q19,-7 37,-21 M551,351 q-13,-5 -26,-14 M551,341 q-18,-7 -37,-20 M551,326 q-21,-8 -41,-23 M551,342 q-21,-9 -43,-23 M551,346 q-23,-9 -46,-25 M693,218 q-21,-9 -43,-24 M693,224 q-20,-8 -40,-22 M693,211 q26,-10 52,-29 M693,324 q27,-11 54,-30 M693,248 q16,-6 31,-17 M806,310 q-14,-5 -27,-15 M806,334 q-22,-9 -45,-25 M806,272 q28,-11 57,-31 M806,285 q28,-11 56,-31 M806,339 q-15,-6 -30,-17 M946,333 q-12,-5 -23,-13 M946,324 q13,-5 26,-14 M946,252 q-11,-4 -22,-12 M946,324 q-11,-5 -23,-12 M946,340 q-9,-4 -18,-10 M1119,303 q-20,-8 -39,-22 M1119,283 q20,-8 40,-22 M1119,244 q-17,-7 -34,-19 M1119,250 q12,-5 25,-14 M1119,258 q18,-7 37,-20 M1260,323 q13,-5 27,-15 M1260,278 q16,-6 32,-18 M1260,299 q-14,-5 -27,-15 M1260,329 q15,-6 31,-17 M1260,307 q-21,-8 -42,-23 M1491,323 q-25,-10 -49,-27 M1491,253 q12,-5 24,-13 M1491,278 q-23,-9 -46,-25 M1491,336 q-23,-9 -47,-26 M1491,269 q17,-7 34,-19 M1745,322 q12,-5 24,-13 M1745,262 q-12,-5 -24,-13 M1745,250 q-16,-6 -31,-17 M1745,283 q11,-4 21,-12 M1745,298 q-10,-4 -20,-11 M1959,281 q-19,-8 -38,-21 M1959,285 q-28,-11 -56,-31 M1959,306 q-16,-6 -32,-18 M1959,231 q20,-8 40,-22 M1959,288 q20,-8 40,-22 M2188,268 q13,-5 25,-14 M2188,224 q-18,-7 -35,-19 M2188,246 q16,-6 31,-17 M2188,300 q11,-5 23,-12 M2188,265 q-15,-6 -30,-17 M2426,235 q17,-7 33,-18 M2426,208 q19,-8 38,-21 M2426,229 q23,-9 45,-25 M2426,208 q13,-5 26,-14 M2426,238 q14,-6 28,-16 M2540,322 q17,-7 34,-19 M2540,314 q19,-8 39,-21 M2540,328 q-18,-7 -35,-19 M2540,320 q22,-9 44,-24 M2540,301 q15,-6 30,-17 M2674,269 q16,-6 32,-18 M2674,323 q-14,-6 -28,-15 M2674,336 q-16,-7 -33,-18 M2674,310 q-22,-9 -45,-25 M2674,273 q23,-9 47,-26 M2838,338 q15,-6 31,-17 M2838,293 q16,-6 32,-18 M2838,275 q15,-6 30,-17 M2838,319 q12,-5 24,-13 M2838,288 q-10,-4 -21,-12 M3023,328 q20,-8 40,-22 M3023,331 q-22,-9 -44,-24 M3023,249 q-19,-8 -38,-21 M3023,261 q17,-7 33,-18 M3023,250 q-18,-7 -37,-20 M3138,282 q-27,-11 -53,-29 M3138,245 q21,-8 41,-23 M3138,265 q-15,-6 -30,-17 M3138,250 q19,-8 38,-21 M3138,233 q19,-8 38,-21 M3304,298 q-14,-6 -29,-16 M3304,289 q15,-6 29,-16 M3304,277 q-23,-9 -45,-25 M3304,280 q23,-9 46,-25 M3304,324 q24,-9 47,-26 M3526,280 q28,-11 57,-31 M3526,307 q-13,-5 -25,-14 M3526,337 q28,-11 56,-31 M3526,304 q-28,-11 -57,-31 M3526,275 q27,-11 54,-30 M3709,274 q23,-9 45,-25 M3709,298 q-12,-5 -24,-13 M3709,268 q16,-7 33,-18 M3709,226 q-15,-6 -30,-17 M3709,200 q-13,-5 -27,-15 M3858,245 q-16,-7 -33,-18 M3858,297 q14,-6 28,-16 M3858,265 q16,-6 31,-17 M3858,300 q27,-11 54,-30 M3858,256 q29,-11 57,-32 "/></svg></div>
+        <div class="belmont-forest__layer belmont-forest__layer--mid" data-forest-layer="0.6" aria-hidden="true"><svg class="belmont-forest__svg" viewBox="0 0 4000 400" preserveAspectRatio="xMinYMax slice" aria-hidden="true" focusable="false"><path fill="currentColor" d="M186,400 L188,77 L194,77 L197,400ZM546,400 L550,104 L558,104 L561,400ZM856,400 L860,121 L867,121 L871,400ZM1125,400 L1129,149 L1137,149 L1141,400ZM1515,400 L1518,129 L1525,129 L1529,400ZM1694,400 L1698,196 L1705,196 L1709,400ZM1952,400 L1956,84 L1963,84 L1967,400ZM2179,400 L2182,197 L2188,197 L2192,400ZM2465,400 L2469,70 L2477,70 L2481,400ZM2841,400 L2845,96 L2853,96 L2857,400ZM3188,400 L3191,97 L3198,97 L3201,400ZM3578,400 L3582,179 L3590,179 L3594,400ZM3856,400 L3859,131 L3866,131 L3870,400ZM0,400 L0,376 Q100,351 200,376 Q300,365 400,376 Q500,350 600,376 Q700,349 800,376 Q900,362 1000,376 Q1100,359 1200,376 Q1300,348 1400,376 Q1500,354 1600,376 Q1700,361 1800,376 Q1900,369 2000,376 Q2100,366 2200,376 Q2300,355 2400,376 Q2500,371 2600,376 Q2700,349 2800,376 Q2900,368 3000,376 Q3100,349 3200,376 Q3300,367 3400,376 Q3500,347 3600,376 Q3700,355 3800,376 Q3900,361 4000,376 L4000,400Z"/><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M191,170 q-19,-8 -38,-21 M191,122 q-27,-11 -54,-30 M191,244 q-15,-6 -30,-16 M191,257 q-23,-9 -47,-26 M191,270 q20,-8 40,-22 M554,148 q29,-12 58,-32 M554,164 q-34,-14 -68,-37 M554,205 q17,-7 34,-18 M554,211 q-39,-16 -78,-43 M554,139 q-30,-12 -60,-33 M864,189 q19,-8 38,-21 M864,247 q32,-13 64,-35 M864,240 q30,-12 60,-33 M864,161 q37,-15 74,-41 M864,275 q-23,-9 -45,-25 M1133,299 q18,-7 37,-20 M1133,255 q19,-7 37,-21 M1133,183 q18,-7 37,-20 M1133,286 q30,-12 61,-33 M1133,209 q-21,-8 -42,-23 M1522,155 q28,-11 57,-31 M1522,304 q26,-10 52,-29 M1522,188 q31,-12 62,-34 M1522,216 q-34,-14 -68,-37 M1522,171 q-24,-10 -48,-27 M1701,304 q-34,-14 -69,-38 M1701,314 q19,-8 39,-21 M1701,241 q17,-7 34,-18 M1701,291 q21,-8 42,-23 M1701,317 q-27,-11 -53,-29 M1960,150 q35,-14 70,-39 M1960,261 q-20,-8 -40,-22 M1960,203 q19,-8 39,-21 M1960,106 q27,-11 54,-30 M1960,193 q-18,-7 -36,-20 M2185,281 q-18,-7 -36,-20 M2185,282 q17,-7 34,-19 M2185,264 q-19,-8 -38,-21 M2185,257 q-18,-7 -35,-19 M2185,230 q28,-11 56,-31 M2473,190 q29,-11 57,-31 M2473,128 q-37,-15 -74,-41 M2473,197 q-24,-9 -47,-26 M2473,236 q-38,-15 -75,-41 M2473,155 q31,-12 61,-34 M2849,130 q19,-7 37,-21 M2849,256 q-34,-13 -67,-37 M2849,188 q-39,-16 -79,-43 M2849,127 q26,-10 52,-29 M2849,288 q-36,-14 -71,-39 M3195,221 q-20,-8 -39,-22 M3195,161 q-25,-10 -50,-27 M3195,259 q-14,-6 -29,-16 M3195,255 q-28,-11 -55,-31 M3195,128 q19,-7 37,-21 M3586,313 q-23,-9 -45,-25 M3586,231 q-28,-11 -56,-31 M3586,270 q32,-13 65,-36 M3586,320 q-34,-14 -69,-38 M3586,237 q20,-8 40,-22 M3863,273 q26,-10 52,-29 M3863,151 q22,-9 44,-24 M3863,247 q17,-7 33,-18 M3863,161 q30,-12 60,-33 M3863,167 q-31,-13 -63,-35 "/></svg></div>
+        <div class="belmont-forest__fog belmont-forest__fog--mid" data-forest-layer="0.7" aria-hidden="true"></div>
+        <div class="belmont-forest__river" data-forest-layer="0.75" aria-hidden="true"></div>
+        <div class="belmont-forest__flies" data-forest-layer="0.9" data-flies aria-hidden="true"></div>
+        <div class="belmont-forest__track" data-forest-layer="1" role="list">
+          <article class="belmont-forest__card" role="listitem">
+            <p class="belmont-kicker">Fase 2 · El bosque</p>
+            <h2 class="belmont-h2" id="bosque-t">Por el <em>río</em></h2>
+            <p class="belmont-prose">Antes de llegar al castillo, Simon cruza un bosque muerto. El scroll vertical se convierte aquí en un viaje lateral, como en el juego.</p>
+          </article>
+          <article class="belmont-forest__card" role="listitem" data-forest-game="rio">
+            <span class="belmont-forest__num">2-1</span>
+            <h3 class="belmont-h3">Plataformas que se hunden</h3>
+            <p>Sobre el agua, los apoyos ceden bajo los pies: quedarse quieto es caer.</p>
+            <div class="belmont-forest__game belmont-forest__game--rio" data-game aria-hidden="true">
+              <span class="belmont-forest__water"></span>
+              <span class="belmont-forest__bank"></span><span class="belmont-forest__plank" data-plank></span><span class="belmont-forest__plank" data-plank></span><span class="belmont-forest__plank" data-plank></span><span class="belmont-forest__plank" data-plank></span><span class="belmont-forest__bank belmont-forest__bank--far"></span>
+              <span class="belmont-forest__hero" data-hero aria-hidden="true"><svg class="belmont-forest__herosvg" viewBox="0 0 40 64" focusable="false"><path d="M20 10c-7 2-11 10-12 22l-5 24 11-8 6 12 6-12 11 8-5-24C31 20 27 12 20 10z"/><circle cx="20" cy="8" r="5.5"/></svg><span class="belmont-icon3d belmont-icon3d--figura" data-icon3d="cazador" data-icon3d-modo="figura" data-facing="1"></span></span>
+            </div>
+            <div class="belmont-trial belmont-trial--forest" data-trial="rio" data-trial-total="4">
+              <p class="belmont-trial__goal"><span class="belmont-trial__tag">Prueba</span> Cruza el río por los cuatro troncos. Salta cuando el siguiente asome (aguja en la franja); el que pisas se hunde si te quedas quieto.</p>
+              <div class="belmont-trial__gauge" aria-hidden="true"><span class="belmont-trial__zone"></span><span class="belmont-trial__needle" data-trial-needle></span></div>
+              <div class="belmont-trial__row"><button class="belmont-trial__act" type="button" data-trial-act>Saltar</button><p class="belmont-trial__state" data-trial-state aria-live="polite">0/4</p><button class="belmont-trial__skip" type="button" data-trial-skip>Saltar prueba</button></div>
+              <div class="belmont-trial__bar" aria-hidden="true"><span data-trial-meter></span></div>
+            </div>
+            <p class="belmont-forest__more" data-sealed="rio"><span>En el juego estos troncos aguantan apenas un instante: el truco es no frenar nunca y saltar en cuanto asoma el siguiente.</span></p>
+          </article>
+          <article class="belmont-forest__card" role="listitem" data-forest-game="troncos">
+            <span class="belmont-forest__num">2-2</span>
+            <h3 class="belmont-h3">Troncos colgantes</h3>
+            <p>Péndulos de madera que hay que leer antes de saltar.</p>
+            <div class="belmont-forest__game belmont-forest__game--troncos" data-game aria-hidden="true">
+              <span class="belmont-forest__ledge"></span><span class="belmont-forest__ledge belmont-forest__ledge--far"></span>
+              <span class="belmont-forest__pendulum" data-pendulum-log><span class="belmont-forest__rope"></span><span class="belmont-forest__trunk"></span></span>
+              <span class="belmont-forest__hero" data-hero aria-hidden="true"><svg class="belmont-forest__herosvg" viewBox="0 0 40 64" focusable="false"><path d="M20 10c-7 2-11 10-12 22l-5 24 11-8 6 12 6-12 11 8-5-24C31 20 27 12 20 10z"/><circle cx="20" cy="8" r="5.5"/></svg><span class="belmont-icon3d belmont-icon3d--figura" data-icon3d="cazador" data-icon3d-modo="figura" data-facing="1"></span></span>
+            </div>
+            <div class="belmont-trial belmont-trial--forest" data-trial="troncos" data-trial-total="3">
+              <p class="belmont-trial__goal"><span class="belmont-trial__tag">Prueba</span> Cruza tres veces el barranco. Salta al tronco cuando llegue a tu lado (aguja en la franja): te lleva a la otra orilla.</p>
+              <div class="belmont-trial__gauge" aria-hidden="true"><span class="belmont-trial__zone"></span><span class="belmont-trial__needle" data-trial-needle></span></div>
+              <div class="belmont-trial__row"><button class="belmont-trial__act" type="button" data-trial-act>Saltar</button><p class="belmont-trial__state" data-trial-state aria-live="polite">0/3</p><button class="belmont-trial__skip" type="button" data-trial-skip>Saltar prueba</button></div>
+              <div class="belmont-trial__bar" aria-hidden="true"><span data-trial-meter></span></div>
+            </div>
+            <p class="belmont-forest__more" data-sealed="troncos"><span>Aquí enseña el juego su regla de oro: mirar el ritmo antes de saltar. Cada cruce el tronco va más deprisa.</span></p>
+          </article>
+          <article class="belmont-forest__card" role="listitem" data-forest-game="anilla">
+            <span class="belmont-forest__num">2-3</span>
+            <h3 class="belmont-h3">La primera anilla</h3>
+            <p>El látigo se engancha y Simon se balancea sobre el barranco.</p>
+            <div class="belmont-forest__game belmont-forest__game--anilla" data-game aria-hidden="true">
+              <span class="belmont-forest__ledge"></span><span class="belmont-forest__ledge belmont-forest__ledge--far"></span>
+              <span class="belmont-forest__hook" data-hook></span>
+              <svg class="belmont-forest__lash" data-lash viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><line x1="0" y1="0" x2="0" y2="0"/></svg>
+              <span class="belmont-forest__hero" data-hero aria-hidden="true"><svg class="belmont-forest__herosvg" viewBox="0 0 40 64" focusable="false"><path d="M20 10c-7 2-11 10-12 22l-5 24 11-8 6 12 6-12 11 8-5-24C31 20 27 12 20 10z"/><circle cx="20" cy="8" r="5.5"/></svg><span class="belmont-icon3d belmont-icon3d--figura" data-icon3d="cazador" data-icon3d-modo="figura" data-facing="1"></span></span>
+            </div>
+            <div class="belmont-trial belmont-trial--forest" data-trial="anilla" data-trial-total="2">
+              <p class="belmont-trial__goal"><span class="belmont-trial__tag">Prueba</span> Dos pasos: engancha el látigo cuando el cazador llegue al borde (la anilla brilla) y suéltalo cuando el balanceo llegue arriba, hacia delante.</p>
+              <div class="belmont-trial__gauge" aria-hidden="true"><span class="belmont-trial__zone"></span><span class="belmont-trial__needle" data-trial-needle></span></div>
+              <div class="belmont-trial__row"><button class="belmont-trial__act" type="button" data-trial-act>Látigo</button><p class="belmont-trial__state" data-trial-state aria-live="polite">0/2</p><button class="belmont-trial__skip" type="button" data-trial-skip>Saltar prueba</button></div>
+              <div class="belmont-trial__bar" aria-hidden="true"><span data-trial-meter></span></div>
+            </div>
+            <p class="belmont-forest__more" data-sealed="anilla"><span>Es la primera vez que el látigo sirve para algo más que golpear. En el juego, mientras cuelgas, la cruceta alarga y acorta el balanceo.</span></p>
+          </article>
+        </div>
+        <div class="belmont-forest__layer belmont-forest__layer--near" data-forest-layer="1.45" aria-hidden="true"><svg class="belmont-forest__svg" viewBox="0 0 4000 400" preserveAspectRatio="xMinYMax slice" aria-hidden="true" focusable="false"><path fill="currentColor" d="M37,400 L43,35 L53,35 L58,400ZM589,400 L594,92 L602,92 L606,400ZM988,400 L995,72 L1008,72 L1015,400ZM1625,400 L1630,43 L1642,43 L1648,400ZM2179,400 L2185,-4 L2196,-4 L2201,400ZM2747,400 L2753,92 L2765,92 L2771,400ZM3167,400 L3173,96 L3186,96 L3192,400ZM3755,400 L3761,-5 L3773,-5 L3779,400ZM0,400 L0,364 Q100,340 200,364 Q300,351 400,364 Q500,336 600,364 Q700,338 800,364 Q900,361 1000,364 Q1100,360 1200,364 Q1300,357 1400,364 Q1500,335 1600,364 Q1700,351 1800,364 Q1900,345 2000,364 Q2100,355 2200,364 Q2300,349 2400,364 Q2500,352 2600,364 Q2700,353 2800,364 Q2900,346 3000,364 Q3100,346 3200,364 Q3300,337 3400,364 Q3500,344 3600,364 Q3700,336 3800,364 Q3900,338 4000,364 L4000,400Z"/><path fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" d="M48,141 q34,-14 68,-38 M48,268 q-42,-17 -84,-46 M48,154 q-40,-16 -81,-44 M48,129 q-33,-13 -65,-36 M48,262 q-47,-19 -94,-52 M598,151 q-22,-9 -44,-24 M598,129 q-22,-9 -45,-25 M598,282 q-29,-12 -58,-32 M598,266 q33,-13 67,-37 M598,228 q40,-16 79,-44 M1002,204 q-38,-15 -75,-41 M1002,164 q-53,-21 -106,-58 M1002,94 q44,-18 89,-49 M1002,104 q-33,-13 -66,-36 M1002,195 q39,-16 79,-43 M1636,86 q-47,-19 -95,-52 M1636,100 q37,-15 73,-40 M1636,65 q-50,-20 -101,-55 M1636,65 q41,-16 82,-45 M1636,132 q-49,-20 -99,-54 M2190,103 q41,-16 82,-45 M2190,127 q-40,-16 -81,-44 M2190,61 q-37,-15 -74,-41 M2190,61 q-37,-15 -74,-41 M2190,254 q53,-21 106,-58 M2759,252 q46,-18 92,-51 M2759,209 q-55,-22 -110,-61 M2759,256 q43,-17 85,-47 M2759,274 q-32,-13 -64,-35 M2759,172 q-39,-15 -77,-42 M3179,283 q-54,-22 -108,-59 M3179,274 q54,-21 107,-59 M3179,159 q27,-11 55,-30 M3179,289 q56,-23 113,-62 M3179,217 q56,-22 112,-61 M3767,143 q40,-16 81,-44 M3767,115 q-32,-13 -65,-36 M3767,200 q57,-23 114,-63 M3767,134 q53,-21 107,-59 M3767,125 q-41,-16 -82,-45 "/></svg></div>
+      </div>
+    </section>
+
+    <!-- 5 · MODO 7 -->
+    <section class="belmont-section belmont-mode7" data-mode7 data-stage-id="05" aria-labelledby="modo7-t">
+      <div class="belmont-mode7__pin" data-mode7-pin>
+        <div class="belmont-mode7__stage" data-m7-stage aria-hidden="true">
+          <canvas class="belmont-mode7__screen" data-m7-room></canvas>
+        </div>
+        <div class="belmont-mode7__level" data-m7-level aria-hidden="true">
+          <svg viewBox="-110 -110 220 120" focusable="false">
+            <path class="belmont-mode7__arc" d="M-100 0A100 100 0 0 1 100 0"/>
+            <path class="belmont-mode7__ok" d="M-20.8 -97.8A100 100 0 0 1 20.8 -97.8"/>
+            <g class="belmont-mode7__ticks"><line x1="0" y1="-100" x2="0" y2="-86" transform="rotate(-90)"/><line x1="0" y1="-100" x2="0" y2="-92" transform="rotate(-75)"/><line x1="0" y1="-100" x2="0" y2="-92" transform="rotate(-60)"/><line x1="0" y1="-100" x2="0" y2="-86" transform="rotate(-45)"/><line x1="0" y1="-100" x2="0" y2="-92" transform="rotate(-30)"/><line x1="0" y1="-100" x2="0" y2="-92" transform="rotate(-15)"/><line x1="0" y1="-100" x2="0" y2="-86" transform="rotate(0)"/><line x1="0" y1="-100" x2="0" y2="-92" transform="rotate(15)"/><line x1="0" y1="-100" x2="0" y2="-92" transform="rotate(30)"/><line x1="0" y1="-100" x2="0" y2="-86" transform="rotate(45)"/><line x1="0" y1="-100" x2="0" y2="-92" transform="rotate(60)"/><line x1="0" y1="-100" x2="0" y2="-92" transform="rotate(75)"/><line x1="0" y1="-100" x2="0" y2="-86" transform="rotate(90)"/></g>
+            <g data-m7-needle><line class="belmont-mode7__needle" x1="0" y1="0" x2="0" y2="-104"/><circle r="6"/></g>
+            <circle class="belmont-mode7__hold" data-m7-hold r="16" cx="0" cy="-40" pathLength="1"/>
+          </svg>
+          <p class="belmont-mode7__levelhint"><span>←</span> NIVEL DE LA SALA <span>→</span></p>
+        </div>
+        <div class="belmont-mode7__hang" data-m7-hang aria-hidden="true"><span class="belmont-mode7__rope"></span><span class="belmont-mode7__ring"></span><span class="belmont-mode7__hero" data-m7-hero><span class="belmont-icon3d belmont-icon3d--figura" data-icon3d="cazador" data-icon3d-modo="figura" data-facing="1"></span></span><span class="belmont-mode7__cornisa" data-m7-cornisa></span></div>
+        <div class="belmont-grid belmont-mode7__copy">
+          <div class="belmont-mode7__card">
+            <p class="belmont-kicker">La habitación que gira</p>
+            <h2 class="belmont-h2" id="modo7-t">Modo&nbsp;7</h2>
+            <div class="belmont-prose">
+              <p>El Modo 7 de la Super Nintendo gira y escala una capa entera de fondo; cambiando sus valores línea a línea, el plano se convierte en un suelo con perspectiva.</p>
+            </div>
+            <div class="belmont-trial" data-trial="modo7" data-trial-total="3">
+              <p class="belmont-trial__goal"><span class="belmont-trial__tag">Prueba</span> Cuelgas del látigo y la sala gira sola para volcarte. Gírala al revés con ← y → (o mantén pulsado ⟲ / ⟳) hasta que la aguja del nivel, en el centro, quede en la franja dorada. Aguanta ahí: cada vez que el círculo se llena cuenta uno. Son tres.</p>
+              <div class="belmont-trial__gauge" aria-hidden="true"><span class="belmont-trial__zone"></span><span class="belmont-trial__needle" data-trial-needle></span></div>
+              <div class="belmont-trial__row"><button class="belmont-trial__act" type="button" data-trial-act data-m7-izq aria-label="Girar a la izquierda">⟲</button><button class="belmont-trial__act" type="button" data-m7-der aria-label="Girar a la derecha">⟳</button><p class="belmont-trial__state" data-trial-state aria-live="polite">0/3</p><button class="belmont-trial__skip" type="button" data-trial-skip>Saltar prueba</button></div>
+              <div class="belmont-trial__bar" aria-hidden="true"><span data-trial-meter></span></div>
+            </div>
+            <div class="belmont-sealed-block" data-sealed="modo7"><p class="belmont-prose">En la fase 4 el juego lo usa para voltear el nivel completo mientras Simon cuelga del látigo, y después lo encierra en una sala cilíndrica que rueda bajo sus pies.</p></div>
+            <p class="belmont-mode7__readout" aria-hidden="true"><span>ROT <span data-rot>000</span>°</span><span>ESC <span data-scale>1.00</span>×</span><span>LÍNEA <span data-line>000</span></span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 · ARSENAL (prueba: equipa al cazador arrastrando cada arma) -->
+    <section class="belmont-arsenal" data-arsenal data-stage-id="07" aria-labelledby="arsenal-t">
+      <div class="belmont-arsenal__pin" data-arsenal-pin>
+        <div class="belmont-grid belmont-arsenal__head">
+          <div>
+            <p class="belmont-kicker">Armas secundarias</p>
+            <h2 class="belmont-h2" id="arsenal-t">Lo que esconden <em>las velas</em></h2>
+          </div>
+        </div>
+        <div class="belmont-grid belmont-arsenal__body">
+          <ul class="belmont-arsenal__list" data-arsenal-rack role="list" aria-label="Armas secundarias">
+            <li class="belmont-arsenal__item">
+          <button class="belmont-weapon" type="button" data-weapon="daga" aria-label="Equipar Daga: arrástrala hasta el cazador o pulsa Intro">
+            <span class="belmont-weapon__icon"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M32 4l5 8v26h-10V12z"/><path d="M20 38h24M32 38v14M28 52h8l-4 8z"/></svg><span class="belmont-icon3d" data-icon3d="daga" data-icon3d-fijo aria-hidden="true"></span></span>
+            <span class="belmont-weapon__name">Daga</span>
+            <span class="belmont-weapon__pill">Recta</span>
+            <span class="belmont-weapon__ok" aria-hidden="true">EQUIPADA</span>
+          </button>
+        </li>
+        <li class="belmont-arsenal__item">
+          <button class="belmont-weapon" type="button" data-weapon="hacha" aria-label="Equipar Hacha: arrástrala hasta el cazador o pulsa Intro">
+            <span class="belmont-weapon__icon"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M30 6v52"/><path d="M30 12q16-6 24 4q-4 10-24 12M30 12q-14-4-20 4q4 10 20 12"/></svg><span class="belmont-icon3d" data-icon3d="hacha" data-icon3d-fijo aria-hidden="true"></span></span>
+            <span class="belmont-weapon__name">Hacha</span>
+            <span class="belmont-weapon__pill">Parábola</span>
+            <span class="belmont-weapon__ok" aria-hidden="true">EQUIPADA</span>
+          </button>
+        </li>
+        <li class="belmont-arsenal__item">
+          <button class="belmont-weapon" type="button" data-weapon="agua" aria-label="Equipar Agua bendita: arrástrala hasta el cazador o pulsa Intro">
+            <span class="belmont-weapon__icon"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M26 6h12M28 6v10q-12 6-12 22a16 16 0 0 0 32 0q0-16-12-22V6"/><path d="M22 40q5-4 10 0t10 0"/><path d="M26 50q2 2 6 2"/></svg><span class="belmont-icon3d" data-icon3d="agua" data-icon3d-fijo aria-hidden="true"></span></span>
+            <span class="belmont-weapon__name">Agua bendita</span>
+            <span class="belmont-weapon__pill">Fuego</span>
+            <span class="belmont-weapon__ok" aria-hidden="true">EQUIPADA</span>
+          </button>
+        </li>
+        <li class="belmont-arsenal__item">
+          <button class="belmont-weapon" type="button" data-weapon="cruz" aria-label="Equipar Cruz: arrástrala hasta el cazador o pulsa Intro">
+            <span class="belmont-weapon__icon"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M28 6h8v18h18v8H36v26h-8V32H10v-8h18z"/></svg><span class="belmont-icon3d" data-icon3d="cruz" data-icon3d-fijo aria-hidden="true"></span></span>
+            <span class="belmont-weapon__name">Cruz</span>
+            <span class="belmont-weapon__pill">Retorno</span>
+            <span class="belmont-weapon__ok" aria-hidden="true">EQUIPADA</span>
+          </button>
+        </li>
+        <li class="belmont-arsenal__item">
+          <button class="belmont-weapon" type="button" data-weapon="reloj" aria-label="Equipar Cronómetro: arrástrala hasta el cazador o pulsa Intro">
+            <span class="belmont-weapon__icon"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="32" cy="36" r="20"/><path d="M28 6h8M32 6v10M50 16l4-4M32 24v12l8 6"/></svg><span class="belmont-icon3d" data-icon3d="reloj" data-icon3d-fijo aria-hidden="true"></span></span>
+            <span class="belmont-weapon__name">Cronómetro</span>
+            <span class="belmont-weapon__pill">Tiempo</span>
+            <span class="belmont-weapon__ok" aria-hidden="true">EQUIPADA</span>
+          </button>
+        </li>
+          </ul>
+          <div class="belmont-arsenal__range" data-range aria-hidden="true">
+            <span class="belmont-arsenal__floor"></span>
+            <span class="belmont-arsenal__drop" data-drop><span class="belmont-arsenal__hero" data-arsenal-hero><svg class="belmont-forest__herosvg" viewBox="0 0 40 64" focusable="false"><path d="M20 10c-7 2-11 10-12 22l-5 24 11-8 6 12 6-12 11 8-5-24C31 20 27 12 20 10z"/><circle cx="20" cy="8" r="5.5"/></svg><span class="belmont-icon3d belmont-icon3d--figura" data-icon3d="cazador" data-icon3d-modo="figura" data-facing="1"></span></span><span class="belmont-arsenal__hint">SUELTA AQUÍ</span></span>
+            <p class="belmont-arsenal__rangetitle">CAMPO DE PRUEBAS · LÁM. VI</p>
+            <span class="belmont-arsenal__foe belmont-arsenal__foe--lobo" data-foe="lobo"></span>
+            <span class="belmont-arsenal__foe belmont-arsenal__foe--vampiro" data-foe="vampiro"></span>
+            <span class="belmont-arsenal__foe belmont-arsenal__foe--murcielago" data-foe="murcielago"></span>
+            <svg class="belmont-arsenal__traces" data-traces focusable="false"></svg>
+            <span class="belmont-arsenal__fx" data-fx></span>
+          </div>
+          <div class="belmont-trial belmont-arsenal__trial" data-trial="arsenal" data-trial-total="5">
+            <p class="belmont-trial__goal"><span class="belmont-trial__tag">Prueba</span> Equipa al cazador con las cinco armas secundarias: arrastra cada una hasta él.</p>
+            <div class="belmont-trial__row"><button class="belmont-trial__act" type="button" data-trial-act>Equipar la siguiente</button><p class="belmont-trial__state" data-trial-state aria-live="polite">0/5</p><button class="belmont-trial__skip" type="button" data-trial-skip>Saltar prueba</button></div>
+            <div class="belmont-trial__bar" aria-hidden="true"><span data-trial-meter></span></div>
+          </div>
+          <ol class="belmont-arsenal__log" data-arsenal-log aria-live="polite" aria-label="Fichas de las armas equipadas">
+            <li class="belmont-arsenal__intro">Arrastra cada arma del armero hasta el cazador. Al soltarla la lanzará contra los enemigos del campo, el trazo de su trayectoria quedará dibujado y aquí aparecerá su ficha: cómo funciona por dentro.</li>
+          </ol>
+          <div class="belmont-sealed-block belmont-arsenal__note" data-sealed="arsenal"><p class="belmont-prose">Todas gastan corazones, que caen de las mismas velas. Los multiplicadores II y III permiten tener dos o tres a la vez en pantalla: con la cruz o el hacha se convierten en una lluvia.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 · LA TORRE DEL RELOJ (vertical inverso: se sube) -->
+    <section class="belmont-clock" data-clock data-stage-id="0A" aria-labelledby="reloj-t">
+      <div class="belmont-clock__pin" data-clock-pin>
+        <div class="belmont-clock__layer belmont-clock__layer--far" data-depth="far"><div class="belmont-clock__gear" style="--belmont-x:14%;--belmont-y:60%;--belmont-s:22vmin" data-gear data-dir="-1" data-teeth="12"><svg class="belmont-clock__svg" viewBox="-52 -52 104 104" aria-hidden="true" focusable="false"><path d="M50.0,0.0 L49.6,6.5 L40.6,10.9 L38.8,16.1 L43.3,25.0 L39.7,30.4 L29.7,29.7 L25.6,33.3 L25.0,43.3 L19.1,46.2 L10.9,40.6 L5.5,41.6 L0.0,50.0 L-6.5,49.6 L-10.9,40.6 L-16.1,38.8 L-25.0,43.3 L-30.4,39.7 L-29.7,29.7 L-33.3,25.6 L-43.3,25.0 L-46.2,19.1 L-40.6,10.9 L-41.6,5.5 L-50.0,0.0 L-49.6,-6.5 L-40.6,-10.9 L-38.8,-16.1 L-43.3,-25.0 L-39.7,-30.4 L-29.7,-29.7 L-25.6,-33.3 L-25.0,-43.3 L-19.1,-46.2 L-10.9,-40.6 L-5.5,-41.6 L-0.0,-50.0 L6.5,-49.6 L10.9,-40.6 L16.1,-38.8 L25.0,-43.3 L30.4,-39.7 L29.7,-29.7 L33.3,-25.6 L43.3,-25.0 L46.2,-19.1 L40.6,-10.9 L41.6,-5.5Z" fill="url(#belmont-hierro)"/><path d="M50.0,0.0 L49.6,6.5 L40.6,10.9 L38.8,16.1 L43.3,25.0 L39.7,30.4 L29.7,29.7 L25.6,33.3 L25.0,43.3 L19.1,46.2 L10.9,40.6 L5.5,41.6 L0.0,50.0 L-6.5,49.6 L-10.9,40.6 L-16.1,38.8 L-25.0,43.3 L-30.4,39.7 L-29.7,29.7 L-33.3,25.6 L-43.3,25.0 L-46.2,19.1 L-40.6,10.9 L-41.6,5.5 L-50.0,0.0 L-49.6,-6.5 L-40.6,-10.9 L-38.8,-16.1 L-43.3,-25.0 L-39.7,-30.4 L-29.7,-29.7 L-25.6,-33.3 L-25.0,-43.3 L-19.1,-46.2 L-10.9,-40.6 L-5.5,-41.6 L-0.0,-50.0 L6.5,-49.6 L10.9,-40.6 L16.1,-38.8 L25.0,-43.3 L30.4,-39.7 L29.7,-29.7 L33.3,-25.6 L43.3,-25.0 L46.2,-19.1 L40.6,-10.9 L41.6,-5.5Z" fill="currentColor" opacity="0.55"/><circle r="31.0" fill="none" stroke="var(--belmont-bg-deep)" stroke-width="4.0"/><g stroke="var(--belmont-bg-deep)" stroke-width="3.5"><line x1="0" y1="0" x2="31.0" y2="0.0"/><line x1="0" y1="0" x2="15.5" y2="26.8"/><line x1="0" y1="0" x2="-15.5" y2="26.8"/><line x1="0" y1="0" x2="-31.0" y2="0.0"/><line x1="0" y1="0" x2="-15.5" y2="-26.8"/><line x1="0" y1="0" x2="15.5" y2="-26.8"/></g><circle r="7.0" fill="var(--belmont-bg-deep)"/></svg></div><div class="belmont-clock__gear" style="--belmont-x:70%;--belmont-y:30%;--belmont-s:16vmin" data-gear data-dir="1" data-teeth="16"><svg class="belmont-clock__svg" viewBox="-52 -52 104 104" aria-hidden="true" focusable="false"><path d="M50.0,0.0 L49.8,4.9 L41.2,8.2 L40.2,12.2 L46.2,19.1 L44.1,23.6 L34.9,23.3 L32.5,26.6 L35.4,35.4 L31.7,38.7 L23.3,34.9 L19.8,37.0 L19.1,46.2 L14.5,47.8 L8.2,41.2 L4.1,41.8 L0.0,50.0 L-4.9,49.8 L-8.2,41.2 L-12.2,40.2 L-19.1,46.2 L-23.6,44.1 L-23.3,34.9 L-26.6,32.5 L-35.4,35.4 L-38.7,31.7 L-34.9,23.3 L-37.0,19.8 L-46.2,19.1 L-47.8,14.5 L-41.2,8.2 L-41.8,4.1 L-50.0,0.0 L-49.8,-4.9 L-41.2,-8.2 L-40.2,-12.2 L-46.2,-19.1 L-44.1,-23.6 L-34.9,-23.3 L-32.5,-26.6 L-35.4,-35.4 L-31.7,-38.7 L-23.3,-34.9 L-19.8,-37.0 L-19.1,-46.2 L-14.5,-47.8 L-8.2,-41.2 L-4.1,-41.8 L-0.0,-50.0 L4.9,-49.8 L8.2,-41.2 L12.2,-40.2 L19.1,-46.2 L23.6,-44.1 L23.3,-34.9 L26.6,-32.5 L35.4,-35.4 L38.7,-31.7 L34.9,-23.3 L37.0,-19.8 L46.2,-19.1 L47.8,-14.5 L41.2,-8.2 L41.8,-4.1Z" fill="url(#belmont-hierro)"/><path d="M50.0,0.0 L49.8,4.9 L41.2,8.2 L40.2,12.2 L46.2,19.1 L44.1,23.6 L34.9,23.3 L32.5,26.6 L35.4,35.4 L31.7,38.7 L23.3,34.9 L19.8,37.0 L19.1,46.2 L14.5,47.8 L8.2,41.2 L4.1,41.8 L0.0,50.0 L-4.9,49.8 L-8.2,41.2 L-12.2,40.2 L-19.1,46.2 L-23.6,44.1 L-23.3,34.9 L-26.6,32.5 L-35.4,35.4 L-38.7,31.7 L-34.9,23.3 L-37.0,19.8 L-46.2,19.1 L-47.8,14.5 L-41.2,8.2 L-41.8,4.1 L-50.0,0.0 L-49.8,-4.9 L-41.2,-8.2 L-40.2,-12.2 L-46.2,-19.1 L-44.1,-23.6 L-34.9,-23.3 L-32.5,-26.6 L-35.4,-35.4 L-31.7,-38.7 L-23.3,-34.9 L-19.8,-37.0 L-19.1,-46.2 L-14.5,-47.8 L-8.2,-41.2 L-4.1,-41.8 L-0.0,-50.0 L4.9,-49.8 L8.2,-41.2 L12.2,-40.2 L19.1,-46.2 L23.6,-44.1 L23.3,-34.9 L26.6,-32.5 L35.4,-35.4 L38.7,-31.7 L34.9,-23.3 L37.0,-19.8 L46.2,-19.1 L47.8,-14.5 L41.2,-8.2 L41.8,-4.1Z" fill="currentColor" opacity="0.55"/><circle r="31.0" fill="none" stroke="var(--belmont-bg-deep)" stroke-width="4.0"/><g stroke="var(--belmont-bg-deep)" stroke-width="3.5"><line x1="0" y1="0" x2="31.0" y2="0.0"/><line x1="0" y1="0" x2="15.5" y2="26.8"/><line x1="0" y1="0" x2="-15.5" y2="26.8"/><line x1="0" y1="0" x2="-31.0" y2="0.0"/><line x1="0" y1="0" x2="-15.5" y2="-26.8"/><line x1="0" y1="0" x2="15.5" y2="-26.8"/></g><circle r="7.0" fill="var(--belmont-bg-deep)"/></svg></div><div class="belmont-clock__gear" style="--belmont-x:40%;--belmont-y:85%;--belmont-s:28vmin" data-gear data-dir="-1" data-teeth="20"><svg class="belmont-clock__svg" viewBox="-52 -52 104 104" aria-hidden="true" focusable="false"><path d="M50.0,0.0 L49.8,3.9 L41.5,6.6 L40.8,9.8 L47.6,15.5 L46.2,19.1 L37.4,19.1 L35.8,21.9 L40.5,29.4 L38.0,32.5 L29.7,29.7 L27.3,31.9 L29.4,40.5 L26.1,42.6 L19.1,37.4 L16.1,38.8 L15.5,47.6 L11.7,48.6 L6.6,41.5 L3.3,41.9 L0.0,50.0 L-3.9,49.8 L-6.6,41.5 L-9.8,40.8 L-15.5,47.6 L-19.1,46.2 L-19.1,37.4 L-21.9,35.8 L-29.4,40.5 L-32.5,38.0 L-29.7,29.7 L-31.9,27.3 L-40.5,29.4 L-42.6,26.1 L-37.4,19.1 L-38.8,16.1 L-47.6,15.5 L-48.6,11.7 L-41.5,6.6 L-41.9,3.3 L-50.0,0.0 L-49.8,-3.9 L-41.5,-6.6 L-40.8,-9.8 L-47.6,-15.5 L-46.2,-19.1 L-37.4,-19.1 L-35.8,-21.9 L-40.5,-29.4 L-38.0,-32.5 L-29.7,-29.7 L-27.3,-31.9 L-29.4,-40.5 L-26.1,-42.6 L-19.1,-37.4 L-16.1,-38.8 L-15.5,-47.6 L-11.7,-48.6 L-6.6,-41.5 L-3.3,-41.9 L-0.0,-50.0 L3.9,-49.8 L6.6,-41.5 L9.8,-40.8 L15.5,-47.6 L19.1,-46.2 L19.1,-37.4 L21.9,-35.8 L29.4,-40.5 L32.5,-38.0 L29.7,-29.7 L31.9,-27.3 L40.5,-29.4 L42.6,-26.1 L37.4,-19.1 L38.8,-16.1 L47.6,-15.5 L48.6,-11.7 L41.5,-6.6 L41.9,-3.3Z" fill="url(#belmont-hierro)"/><path d="M50.0,0.0 L49.8,3.9 L41.5,6.6 L40.8,9.8 L47.6,15.5 L46.2,19.1 L37.4,19.1 L35.8,21.9 L40.5,29.4 L38.0,32.5 L29.7,29.7 L27.3,31.9 L29.4,40.5 L26.1,42.6 L19.1,37.4 L16.1,38.8 L15.5,47.6 L11.7,48.6 L6.6,41.5 L3.3,41.9 L0.0,50.0 L-3.9,49.8 L-6.6,41.5 L-9.8,40.8 L-15.5,47.6 L-19.1,46.2 L-19.1,37.4 L-21.9,35.8 L-29.4,40.5 L-32.5,38.0 L-29.7,29.7 L-31.9,27.3 L-40.5,29.4 L-42.6,26.1 L-37.4,19.1 L-38.8,16.1 L-47.6,15.5 L-48.6,11.7 L-41.5,6.6 L-41.9,3.3 L-50.0,0.0 L-49.8,-3.9 L-41.5,-6.6 L-40.8,-9.8 L-47.6,-15.5 L-46.2,-19.1 L-37.4,-19.1 L-35.8,-21.9 L-40.5,-29.4 L-38.0,-32.5 L-29.7,-29.7 L-27.3,-31.9 L-29.4,-40.5 L-26.1,-42.6 L-19.1,-37.4 L-16.1,-38.8 L-15.5,-47.6 L-11.7,-48.6 L-6.6,-41.5 L-3.3,-41.9 L-0.0,-50.0 L3.9,-49.8 L6.6,-41.5 L9.8,-40.8 L15.5,-47.6 L19.1,-46.2 L19.1,-37.4 L21.9,-35.8 L29.4,-40.5 L32.5,-38.0 L29.7,-29.7 L31.9,-27.3 L40.5,-29.4 L42.6,-26.1 L37.4,-19.1 L38.8,-16.1 L47.6,-15.5 L48.6,-11.7 L41.5,-6.6 L41.9,-3.3Z" fill="currentColor" opacity="0.55"/><circle r="31.0" fill="none" stroke="var(--belmont-bg-deep)" stroke-width="4.0"/><g stroke="var(--belmont-bg-deep)" stroke-width="3.5"><line x1="0" y1="0" x2="31.0" y2="0.0"/><line x1="0" y1="0" x2="15.5" y2="26.8"/><line x1="0" y1="0" x2="-15.5" y2="26.8"/><line x1="0" y1="0" x2="-31.0" y2="0.0"/><line x1="0" y1="0" x2="-15.5" y2="-26.8"/><line x1="0" y1="0" x2="15.5" y2="-26.8"/></g><circle r="7.0" fill="var(--belmont-bg-deep)"/></svg></div><div class="belmont-clock__gear" style="--belmont-x:85%;--belmont-y:75%;--belmont-s:12vmin" data-gear data-dir="1" data-teeth="24"><svg class="belmont-clock__svg" viewBox="-52 -52 104 104" aria-hidden="true" focusable="false"><path d="M50.0,0.0 L49.9,3.3 L41.6,5.5 L41.2,8.2 L48.3,12.9 L47.3,16.1 L38.8,16.1 L37.7,18.6 L43.3,25.0 L41.6,27.8 L33.3,25.6 L31.6,27.7 L35.4,35.4 L33.0,37.6 L25.6,33.3 L23.3,34.9 L25.0,43.3 L22.1,44.8 L16.1,38.8 L13.5,39.8 L12.9,48.3 L9.8,49.0 L5.5,41.6 L2.7,41.9 L0.0,50.0 L-3.3,49.9 L-5.5,41.6 L-8.2,41.2 L-12.9,48.3 L-16.1,47.3 L-16.1,38.8 L-18.6,37.7 L-25.0,43.3 L-27.8,41.6 L-25.6,33.3 L-27.7,31.6 L-35.4,35.4 L-37.6,33.0 L-33.3,25.6 L-34.9,23.3 L-43.3,25.0 L-44.8,22.1 L-38.8,16.1 L-39.8,13.5 L-48.3,12.9 L-49.0,9.8 L-41.6,5.5 L-41.9,2.7 L-50.0,0.0 L-49.9,-3.3 L-41.6,-5.5 L-41.2,-8.2 L-48.3,-12.9 L-47.3,-16.1 L-38.8,-16.1 L-37.7,-18.6 L-43.3,-25.0 L-41.6,-27.8 L-33.3,-25.6 L-31.6,-27.7 L-35.4,-35.4 L-33.0,-37.6 L-25.6,-33.3 L-23.3,-34.9 L-25.0,-43.3 L-22.1,-44.8 L-16.1,-38.8 L-13.5,-39.8 L-12.9,-48.3 L-9.8,-49.0 L-5.5,-41.6 L-2.7,-41.9 L-0.0,-50.0 L3.3,-49.9 L5.5,-41.6 L8.2,-41.2 L12.9,-48.3 L16.1,-47.3 L16.1,-38.8 L18.6,-37.7 L25.0,-43.3 L27.8,-41.6 L25.6,-33.3 L27.7,-31.6 L35.4,-35.4 L37.6,-33.0 L33.3,-25.6 L34.9,-23.3 L43.3,-25.0 L44.8,-22.1 L38.8,-16.1 L39.8,-13.5 L48.3,-12.9 L49.0,-9.8 L41.6,-5.5 L41.9,-2.7Z" fill="url(#belmont-hierro)"/><path d="M50.0,0.0 L49.9,3.3 L41.6,5.5 L41.2,8.2 L48.3,12.9 L47.3,16.1 L38.8,16.1 L37.7,18.6 L43.3,25.0 L41.6,27.8 L33.3,25.6 L31.6,27.7 L35.4,35.4 L33.0,37.6 L25.6,33.3 L23.3,34.9 L25.0,43.3 L22.1,44.8 L16.1,38.8 L13.5,39.8 L12.9,48.3 L9.8,49.0 L5.5,41.6 L2.7,41.9 L0.0,50.0 L-3.3,49.9 L-5.5,41.6 L-8.2,41.2 L-12.9,48.3 L-16.1,47.3 L-16.1,38.8 L-18.6,37.7 L-25.0,43.3 L-27.8,41.6 L-25.6,33.3 L-27.7,31.6 L-35.4,35.4 L-37.6,33.0 L-33.3,25.6 L-34.9,23.3 L-43.3,25.0 L-44.8,22.1 L-38.8,16.1 L-39.8,13.5 L-48.3,12.9 L-49.0,9.8 L-41.6,5.5 L-41.9,2.7 L-50.0,0.0 L-49.9,-3.3 L-41.6,-5.5 L-41.2,-8.2 L-48.3,-12.9 L-47.3,-16.1 L-38.8,-16.1 L-37.7,-18.6 L-43.3,-25.0 L-41.6,-27.8 L-33.3,-25.6 L-31.6,-27.7 L-35.4,-35.4 L-33.0,-37.6 L-25.6,-33.3 L-23.3,-34.9 L-25.0,-43.3 L-22.1,-44.8 L-16.1,-38.8 L-13.5,-39.8 L-12.9,-48.3 L-9.8,-49.0 L-5.5,-41.6 L-2.7,-41.9 L-0.0,-50.0 L3.3,-49.9 L5.5,-41.6 L8.2,-41.2 L12.9,-48.3 L16.1,-47.3 L16.1,-38.8 L18.6,-37.7 L25.0,-43.3 L27.8,-41.6 L25.6,-33.3 L27.7,-31.6 L35.4,-35.4 L37.6,-33.0 L33.3,-25.6 L34.9,-23.3 L43.3,-25.0 L44.8,-22.1 L38.8,-16.1 L39.8,-13.5 L48.3,-12.9 L49.0,-9.8 L41.6,-5.5 L41.9,-2.7Z" fill="currentColor" opacity="0.55"/><circle r="31.0" fill="none" stroke="var(--belmont-bg-deep)" stroke-width="4.0"/><g stroke="var(--belmont-bg-deep)" stroke-width="3.5"><line x1="0" y1="0" x2="31.0" y2="0.0"/><line x1="0" y1="0" x2="15.5" y2="26.8"/><line x1="0" y1="0" x2="-15.5" y2="26.8"/><line x1="0" y1="0" x2="-31.0" y2="0.0"/><line x1="0" y1="0" x2="-15.5" y2="-26.8"/><line x1="0" y1="0" x2="15.5" y2="-26.8"/></g><circle r="7.0" fill="var(--belmont-bg-deep)"/></svg></div></div>
+<div class="belmont-clock__layer belmont-clock__layer--mid" data-depth="mid"><div class="belmont-clock__gear" style="--belmont-x:8%;--belmont-y:20%;--belmont-s:34vmin" data-gear data-dir="-1" data-teeth="12"><svg class="belmont-clock__svg" viewBox="-52 -52 104 104" aria-hidden="true" focusable="false"><path d="M50.0,0.0 L49.6,6.5 L40.6,10.9 L38.8,16.1 L43.3,25.0 L39.7,30.4 L29.7,29.7 L25.6,33.3 L25.0,43.3 L19.1,46.2 L10.9,40.6 L5.5,41.6 L0.0,50.0 L-6.5,49.6 L-10.9,40.6 L-16.1,38.8 L-25.0,43.3 L-30.4,39.7 L-29.7,29.7 L-33.3,25.6 L-43.3,25.0 L-46.2,19.1 L-40.6,10.9 L-41.6,5.5 L-50.0,0.0 L-49.6,-6.5 L-40.6,-10.9 L-38.8,-16.1 L-43.3,-25.0 L-39.7,-30.4 L-29.7,-29.7 L-25.6,-33.3 L-25.0,-43.3 L-19.1,-46.2 L-10.9,-40.6 L-5.5,-41.6 L-0.0,-50.0 L6.5,-49.6 L10.9,-40.6 L16.1,-38.8 L25.0,-43.3 L30.4,-39.7 L29.7,-29.7 L33.3,-25.6 L43.3,-25.0 L46.2,-19.1 L40.6,-10.9 L41.6,-5.5Z" fill="url(#belmont-hierro)"/><path d="M50.0,0.0 L49.6,6.5 L40.6,10.9 L38.8,16.1 L43.3,25.0 L39.7,30.4 L29.7,29.7 L25.6,33.3 L25.0,43.3 L19.1,46.2 L10.9,40.6 L5.5,41.6 L0.0,50.0 L-6.5,49.6 L-10.9,40.6 L-16.1,38.8 L-25.0,43.3 L-30.4,39.7 L-29.7,29.7 L-33.3,25.6 L-43.3,25.0 L-46.2,19.1 L-40.6,10.9 L-41.6,5.5 L-50.0,0.0 L-49.6,-6.5 L-40.6,-10.9 L-38.8,-16.1 L-43.3,-25.0 L-39.7,-30.4 L-29.7,-29.7 L-25.6,-33.3 L-25.0,-43.3 L-19.1,-46.2 L-10.9,-40.6 L-5.5,-41.6 L-0.0,-50.0 L6.5,-49.6 L10.9,-40.6 L16.1,-38.8 L25.0,-43.3 L30.4,-39.7 L29.7,-29.7 L33.3,-25.6 L43.3,-25.0 L46.2,-19.1 L40.6,-10.9 L41.6,-5.5Z" fill="currentColor" opacity="0.55"/><circle r="31.0" fill="none" stroke="var(--belmont-bg-deep)" stroke-width="4.0"/><g stroke="var(--belmont-bg-deep)" stroke-width="3.5"><line x1="0" y1="0" x2="31.0" y2="0.0"/><line x1="0" y1="0" x2="15.5" y2="26.8"/><line x1="0" y1="0" x2="-15.5" y2="26.8"/><line x1="0" y1="0" x2="-31.0" y2="0.0"/><line x1="0" y1="0" x2="-15.5" y2="-26.8"/><line x1="0" y1="0" x2="15.5" y2="-26.8"/></g><circle r="7.0" fill="var(--belmont-bg-deep)"/></svg></div><div class="belmont-clock__gear" style="--belmont-x:78%;--belmont-y:55%;--belmont-s:40vmin" data-gear data-dir="1" data-teeth="16"><svg class="belmont-clock__svg" viewBox="-52 -52 104 104" aria-hidden="true" focusable="false"><path d="M50.0,0.0 L49.8,4.9 L41.2,8.2 L40.2,12.2 L46.2,19.1 L44.1,23.6 L34.9,23.3 L32.5,26.6 L35.4,35.4 L31.7,38.7 L23.3,34.9 L19.8,37.0 L19.1,46.2 L14.5,47.8 L8.2,41.2 L4.1,41.8 L0.0,50.0 L-4.9,49.8 L-8.2,41.2 L-12.2,40.2 L-19.1,46.2 L-23.6,44.1 L-23.3,34.9 L-26.6,32.5 L-35.4,35.4 L-38.7,31.7 L-34.9,23.3 L-37.0,19.8 L-46.2,19.1 L-47.8,14.5 L-41.2,8.2 L-41.8,4.1 L-50.0,0.0 L-49.8,-4.9 L-41.2,-8.2 L-40.2,-12.2 L-46.2,-19.1 L-44.1,-23.6 L-34.9,-23.3 L-32.5,-26.6 L-35.4,-35.4 L-31.7,-38.7 L-23.3,-34.9 L-19.8,-37.0 L-19.1,-46.2 L-14.5,-47.8 L-8.2,-41.2 L-4.1,-41.8 L-0.0,-50.0 L4.9,-49.8 L8.2,-41.2 L12.2,-40.2 L19.1,-46.2 L23.6,-44.1 L23.3,-34.9 L26.6,-32.5 L35.4,-35.4 L38.7,-31.7 L34.9,-23.3 L37.0,-19.8 L46.2,-19.1 L47.8,-14.5 L41.2,-8.2 L41.8,-4.1Z" fill="url(#belmont-hierro)"/><path d="M50.0,0.0 L49.8,4.9 L41.2,8.2 L40.2,12.2 L46.2,19.1 L44.1,23.6 L34.9,23.3 L32.5,26.6 L35.4,35.4 L31.7,38.7 L23.3,34.9 L19.8,37.0 L19.1,46.2 L14.5,47.8 L8.2,41.2 L4.1,41.8 L0.0,50.0 L-4.9,49.8 L-8.2,41.2 L-12.2,40.2 L-19.1,46.2 L-23.6,44.1 L-23.3,34.9 L-26.6,32.5 L-35.4,35.4 L-38.7,31.7 L-34.9,23.3 L-37.0,19.8 L-46.2,19.1 L-47.8,14.5 L-41.2,8.2 L-41.8,4.1 L-50.0,0.0 L-49.8,-4.9 L-41.2,-8.2 L-40.2,-12.2 L-46.2,-19.1 L-44.1,-23.6 L-34.9,-23.3 L-32.5,-26.6 L-35.4,-35.4 L-31.7,-38.7 L-23.3,-34.9 L-19.8,-37.0 L-19.1,-46.2 L-14.5,-47.8 L-8.2,-41.2 L-4.1,-41.8 L-0.0,-50.0 L4.9,-49.8 L8.2,-41.2 L12.2,-40.2 L19.1,-46.2 L23.6,-44.1 L23.3,-34.9 L26.6,-32.5 L35.4,-35.4 L38.7,-31.7 L34.9,-23.3 L37.0,-19.8 L46.2,-19.1 L47.8,-14.5 L41.2,-8.2 L41.8,-4.1Z" fill="currentColor" opacity="0.55"/><circle r="31.0" fill="none" stroke="var(--belmont-bg-deep)" stroke-width="4.0"/><g stroke="var(--belmont-bg-deep)" stroke-width="3.5"><line x1="0" y1="0" x2="31.0" y2="0.0"/><line x1="0" y1="0" x2="15.5" y2="26.8"/><line x1="0" y1="0" x2="-15.5" y2="26.8"/><line x1="0" y1="0" x2="-31.0" y2="0.0"/><line x1="0" y1="0" x2="-15.5" y2="-26.8"/><line x1="0" y1="0" x2="15.5" y2="-26.8"/></g><circle r="7.0" fill="var(--belmont-bg-deep)"/></svg></div><div class="belmont-clock__gear" style="--belmont-x:30%;--belmont-y:100%;--belmont-s:30vmin" data-gear data-dir="-1" data-teeth="20"><svg class="belmont-clock__svg" viewBox="-52 -52 104 104" aria-hidden="true" focusable="false"><path d="M50.0,0.0 L49.8,3.9 L41.5,6.6 L40.8,9.8 L47.6,15.5 L46.2,19.1 L37.4,19.1 L35.8,21.9 L40.5,29.4 L38.0,32.5 L29.7,29.7 L27.3,31.9 L29.4,40.5 L26.1,42.6 L19.1,37.4 L16.1,38.8 L15.5,47.6 L11.7,48.6 L6.6,41.5 L3.3,41.9 L0.0,50.0 L-3.9,49.8 L-6.6,41.5 L-9.8,40.8 L-15.5,47.6 L-19.1,46.2 L-19.1,37.4 L-21.9,35.8 L-29.4,40.5 L-32.5,38.0 L-29.7,29.7 L-31.9,27.3 L-40.5,29.4 L-42.6,26.1 L-37.4,19.1 L-38.8,16.1 L-47.6,15.5 L-48.6,11.7 L-41.5,6.6 L-41.9,3.3 L-50.0,0.0 L-49.8,-3.9 L-41.5,-6.6 L-40.8,-9.8 L-47.6,-15.5 L-46.2,-19.1 L-37.4,-19.1 L-35.8,-21.9 L-40.5,-29.4 L-38.0,-32.5 L-29.7,-29.7 L-27.3,-31.9 L-29.4,-40.5 L-26.1,-42.6 L-19.1,-37.4 L-16.1,-38.8 L-15.5,-47.6 L-11.7,-48.6 L-6.6,-41.5 L-3.3,-41.9 L-0.0,-50.0 L3.9,-49.8 L6.6,-41.5 L9.8,-40.8 L15.5,-47.6 L19.1,-46.2 L19.1,-37.4 L21.9,-35.8 L29.4,-40.5 L32.5,-38.0 L29.7,-29.7 L31.9,-27.3 L40.5,-29.4 L42.6,-26.1 L37.4,-19.1 L38.8,-16.1 L47.6,-15.5 L48.6,-11.7 L41.5,-6.6 L41.9,-3.3Z" fill="url(#belmont-hierro)"/><path d="M50.0,0.0 L49.8,3.9 L41.5,6.6 L40.8,9.8 L47.6,15.5 L46.2,19.1 L37.4,19.1 L35.8,21.9 L40.5,29.4 L38.0,32.5 L29.7,29.7 L27.3,31.9 L29.4,40.5 L26.1,42.6 L19.1,37.4 L16.1,38.8 L15.5,47.6 L11.7,48.6 L6.6,41.5 L3.3,41.9 L0.0,50.0 L-3.9,49.8 L-6.6,41.5 L-9.8,40.8 L-15.5,47.6 L-19.1,46.2 L-19.1,37.4 L-21.9,35.8 L-29.4,40.5 L-32.5,38.0 L-29.7,29.7 L-31.9,27.3 L-40.5,29.4 L-42.6,26.1 L-37.4,19.1 L-38.8,16.1 L-47.6,15.5 L-48.6,11.7 L-41.5,6.6 L-41.9,3.3 L-50.0,0.0 L-49.8,-3.9 L-41.5,-6.6 L-40.8,-9.8 L-47.6,-15.5 L-46.2,-19.1 L-37.4,-19.1 L-35.8,-21.9 L-40.5,-29.4 L-38.0,-32.5 L-29.7,-29.7 L-27.3,-31.9 L-29.4,-40.5 L-26.1,-42.6 L-19.1,-37.4 L-16.1,-38.8 L-15.5,-47.6 L-11.7,-48.6 L-6.6,-41.5 L-3.3,-41.9 L-0.0,-50.0 L3.9,-49.8 L6.6,-41.5 L9.8,-40.8 L15.5,-47.6 L19.1,-46.2 L19.1,-37.4 L21.9,-35.8 L29.4,-40.5 L32.5,-38.0 L29.7,-29.7 L31.9,-27.3 L40.5,-29.4 L42.6,-26.1 L37.4,-19.1 L38.8,-16.1 L47.6,-15.5 L48.6,-11.7 L41.5,-6.6 L41.9,-3.3Z" fill="currentColor" opacity="0.55"/><circle r="31.0" fill="none" stroke="var(--belmont-bg-deep)" stroke-width="4.0"/><g stroke="var(--belmont-bg-deep)" stroke-width="3.5"><line x1="0" y1="0" x2="31.0" y2="0.0"/><line x1="0" y1="0" x2="15.5" y2="26.8"/><line x1="0" y1="0" x2="-15.5" y2="26.8"/><line x1="0" y1="0" x2="-31.0" y2="0.0"/><line x1="0" y1="0" x2="-15.5" y2="-26.8"/><line x1="0" y1="0" x2="15.5" y2="-26.8"/></g><circle r="7.0" fill="var(--belmont-bg-deep)"/></svg></div></div>
+<div class="belmont-clock__layer belmont-clock__layer--near" data-depth="near"><div class="belmont-clock__gear" style="--belmont-x:-6%;--belmont-y:70%;--belmont-s:60vmin" data-gear data-dir="-1" data-teeth="12"><svg class="belmont-clock__svg" viewBox="-52 -52 104 104" aria-hidden="true" focusable="false"><path d="M50.0,0.0 L49.6,6.5 L40.6,10.9 L38.8,16.1 L43.3,25.0 L39.7,30.4 L29.7,29.7 L25.6,33.3 L25.0,43.3 L19.1,46.2 L10.9,40.6 L5.5,41.6 L0.0,50.0 L-6.5,49.6 L-10.9,40.6 L-16.1,38.8 L-25.0,43.3 L-30.4,39.7 L-29.7,29.7 L-33.3,25.6 L-43.3,25.0 L-46.2,19.1 L-40.6,10.9 L-41.6,5.5 L-50.0,0.0 L-49.6,-6.5 L-40.6,-10.9 L-38.8,-16.1 L-43.3,-25.0 L-39.7,-30.4 L-29.7,-29.7 L-25.6,-33.3 L-25.0,-43.3 L-19.1,-46.2 L-10.9,-40.6 L-5.5,-41.6 L-0.0,-50.0 L6.5,-49.6 L10.9,-40.6 L16.1,-38.8 L25.0,-43.3 L30.4,-39.7 L29.7,-29.7 L33.3,-25.6 L43.3,-25.0 L46.2,-19.1 L40.6,-10.9 L41.6,-5.5Z" fill="url(#belmont-hierro)"/><path d="M50.0,0.0 L49.6,6.5 L40.6,10.9 L38.8,16.1 L43.3,25.0 L39.7,30.4 L29.7,29.7 L25.6,33.3 L25.0,43.3 L19.1,46.2 L10.9,40.6 L5.5,41.6 L0.0,50.0 L-6.5,49.6 L-10.9,40.6 L-16.1,38.8 L-25.0,43.3 L-30.4,39.7 L-29.7,29.7 L-33.3,25.6 L-43.3,25.0 L-46.2,19.1 L-40.6,10.9 L-41.6,5.5 L-50.0,0.0 L-49.6,-6.5 L-40.6,-10.9 L-38.8,-16.1 L-43.3,-25.0 L-39.7,-30.4 L-29.7,-29.7 L-25.6,-33.3 L-25.0,-43.3 L-19.1,-46.2 L-10.9,-40.6 L-5.5,-41.6 L-0.0,-50.0 L6.5,-49.6 L10.9,-40.6 L16.1,-38.8 L25.0,-43.3 L30.4,-39.7 L29.7,-29.7 L33.3,-25.6 L43.3,-25.0 L46.2,-19.1 L40.6,-10.9 L41.6,-5.5Z" fill="currentColor" opacity="0.55"/><circle r="31.0" fill="none" stroke="var(--belmont-bg-deep)" stroke-width="4.0"/><g stroke="var(--belmont-bg-deep)" stroke-width="3.5"><line x1="0" y1="0" x2="31.0" y2="0.0"/><line x1="0" y1="0" x2="15.5" y2="26.8"/><line x1="0" y1="0" x2="-15.5" y2="26.8"/><line x1="0" y1="0" x2="-31.0" y2="0.0"/><line x1="0" y1="0" x2="-15.5" y2="-26.8"/><line x1="0" y1="0" x2="15.5" y2="-26.8"/></g><circle r="7.0" fill="var(--belmont-bg-deep)"/></svg></div><div class="belmont-clock__gear" style="--belmont-x:92%;--belmont-y:10%;--belmont-s:52vmin" data-gear data-dir="1" data-teeth="16"><svg class="belmont-clock__svg" viewBox="-52 -52 104 104" aria-hidden="true" focusable="false"><path d="M50.0,0.0 L49.8,4.9 L41.2,8.2 L40.2,12.2 L46.2,19.1 L44.1,23.6 L34.9,23.3 L32.5,26.6 L35.4,35.4 L31.7,38.7 L23.3,34.9 L19.8,37.0 L19.1,46.2 L14.5,47.8 L8.2,41.2 L4.1,41.8 L0.0,50.0 L-4.9,49.8 L-8.2,41.2 L-12.2,40.2 L-19.1,46.2 L-23.6,44.1 L-23.3,34.9 L-26.6,32.5 L-35.4,35.4 L-38.7,31.7 L-34.9,23.3 L-37.0,19.8 L-46.2,19.1 L-47.8,14.5 L-41.2,8.2 L-41.8,4.1 L-50.0,0.0 L-49.8,-4.9 L-41.2,-8.2 L-40.2,-12.2 L-46.2,-19.1 L-44.1,-23.6 L-34.9,-23.3 L-32.5,-26.6 L-35.4,-35.4 L-31.7,-38.7 L-23.3,-34.9 L-19.8,-37.0 L-19.1,-46.2 L-14.5,-47.8 L-8.2,-41.2 L-4.1,-41.8 L-0.0,-50.0 L4.9,-49.8 L8.2,-41.2 L12.2,-40.2 L19.1,-46.2 L23.6,-44.1 L23.3,-34.9 L26.6,-32.5 L35.4,-35.4 L38.7,-31.7 L34.9,-23.3 L37.0,-19.8 L46.2,-19.1 L47.8,-14.5 L41.2,-8.2 L41.8,-4.1Z" fill="url(#belmont-hierro)"/><path d="M50.0,0.0 L49.8,4.9 L41.2,8.2 L40.2,12.2 L46.2,19.1 L44.1,23.6 L34.9,23.3 L32.5,26.6 L35.4,35.4 L31.7,38.7 L23.3,34.9 L19.8,37.0 L19.1,46.2 L14.5,47.8 L8.2,41.2 L4.1,41.8 L0.0,50.0 L-4.9,49.8 L-8.2,41.2 L-12.2,40.2 L-19.1,46.2 L-23.6,44.1 L-23.3,34.9 L-26.6,32.5 L-35.4,35.4 L-38.7,31.7 L-34.9,23.3 L-37.0,19.8 L-46.2,19.1 L-47.8,14.5 L-41.2,8.2 L-41.8,4.1 L-50.0,0.0 L-49.8,-4.9 L-41.2,-8.2 L-40.2,-12.2 L-46.2,-19.1 L-44.1,-23.6 L-34.9,-23.3 L-32.5,-26.6 L-35.4,-35.4 L-31.7,-38.7 L-23.3,-34.9 L-19.8,-37.0 L-19.1,-46.2 L-14.5,-47.8 L-8.2,-41.2 L-4.1,-41.8 L-0.0,-50.0 L4.9,-49.8 L8.2,-41.2 L12.2,-40.2 L19.1,-46.2 L23.6,-44.1 L23.3,-34.9 L26.6,-32.5 L35.4,-35.4 L38.7,-31.7 L34.9,-23.3 L37.0,-19.8 L46.2,-19.1 L47.8,-14.5 L41.2,-8.2 L41.8,-4.1Z" fill="currentColor" opacity="0.55"/><circle r="31.0" fill="none" stroke="var(--belmont-bg-deep)" stroke-width="4.0"/><g stroke="var(--belmont-bg-deep)" stroke-width="3.5"><line x1="0" y1="0" x2="31.0" y2="0.0"/><line x1="0" y1="0" x2="15.5" y2="26.8"/><line x1="0" y1="0" x2="-15.5" y2="26.8"/><line x1="0" y1="0" x2="-31.0" y2="0.0"/><line x1="0" y1="0" x2="-15.5" y2="-26.8"/><line x1="0" y1="0" x2="15.5" y2="-26.8"/></g><circle r="7.0" fill="var(--belmont-bg-deep)"/></svg></div></div>
+        <div class="belmont-clock__face" data-clock-face aria-hidden="true">
+          <span class="belmont-clock__hand belmont-clock__hand--h" data-hand-h></span>
+          <span class="belmont-clock__hand belmont-clock__hand--m" data-hand-m></span>
+          <span class="belmont-clock__xii"></span>
+          <span class="belmont-clock__hand belmont-clock__hand--game" data-hand-game></span>
+        </div>
+        <div class="belmont-clock__pendulum" data-pendulum aria-hidden="true"><span></span></div>
+        <span class="belmont-climber" data-climber aria-hidden="true"><span class="belmont-icon3d belmont-icon3d--figura" data-icon3d="cazador" data-icon3d-modo="figura" data-facing="1" aria-hidden="true"></span></span>
+        <div class="belmont-clock__steps" data-steps aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="belmont-grid belmont-clock__copy">
+          <div class="belmont-clock__card">
+            <p class="belmont-kicker">Fase A</p>
+            <h2 class="belmont-h2" id="reloj-t">La torre <em>del reloj</em></h2>
+            <p class="belmont-prose">Engranajes, péndulos y plataformas que suben y bajan. Aquí el scroll hacia abajo te hace <strong>subir</strong>.</p>
+            <p class="belmont-clock__alt" aria-hidden="true">ALTURA <span data-alt>000</span> M</p>
+          </div>
+          <div class="belmont-clock__card belmont-clock__card--trial">
+              <div class="belmont-trial" data-trial="reloj" data-trial-total="3">
+                <p class="belmont-trial__goal"><span class="belmont-trial__tag">Prueba</span> Detén la aguja dorada justo en las XII. Tres veces, y cada vuelta va más rápida.</p>
+                <div class="belmont-trial__gauge" aria-hidden="true"><span class="belmont-trial__zone"></span><span class="belmont-trial__needle" data-trial-needle></span></div>
+                <div class="belmont-trial__row"><button class="belmont-trial__act" type="button" data-trial-act>Detener</button><p class="belmont-trial__state" data-trial-state aria-live="polite">0/3</p><button class="belmont-trial__skip" type="button" data-trial-skip>Saltar prueba</button></div>
+                <div class="belmont-trial__bar" aria-hidden="true"><span data-trial-meter></span></div>
+              </div>
+              <div class="belmont-sealed-block" data-sealed="reloj"><p class="belmont-prose">Como el cronómetro de las armas secundarias, aquí el tiempo manda: las plataformas se mueven con el mecanismo y un salto a destiempo te devuelve abajo.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 · EL MURO SECRETO (interacción + diálogo) -->
+    <section class="belmont-section belmont-grid belmont-secret" data-stage-id="0S" aria-labelledby="secreto-t">
+      <div class="belmont-secret__text">
+        <p class="belmont-kicker">Secretos</p>
+        <h2 class="belmont-h2" id="secreto-t">Muros que <em>suenan huecos</em></h2>
+        <div class="belmont-prose">
+          <p>En los Castlevania hay muros que ceden a latigazos y esconden comida que recupera vida, corazones o tesoros. Este también.</p>
+        </div>
+        <p class="belmont-secret__hint" aria-live="polite" data-wall-msg>Golpéalo tres veces.</p>
+      </div>
+      <div class="belmont-secret__wallbox">
+        <button class="belmont-wall" type="button" data-wall aria-label="Golpear el muro">
+          <span class="belmont-wall__brick" style="--belmont-r:-0.53"></span><span class="belmont-wall__brick" style="--belmont-r:-0.79"></span><span class="belmont-wall__brick" style="--belmont-r:-0.21"></span><span class="belmont-wall__brick" style="--belmont-r:-0.69"></span><span class="belmont-wall__brick" style="--belmont-r:-0.87"></span><span class="belmont-wall__brick" style="--belmont-r:-0.20"></span><span class="belmont-wall__brick belmont-wall__brick--half" style="--belmont-r:0.84"></span><span class="belmont-wall__brick" style="--belmont-r:0.60"></span><span class="belmont-wall__brick" style="--belmont-r:0.53"></span><span class="belmont-wall__brick" style="--belmont-r:-0.56"></span><span class="belmont-wall__brick" style="--belmont-r:0.07"></span><span class="belmont-wall__brick" style="--belmont-r:-0.45"></span><span class="belmont-wall__brick" style="--belmont-r:-0.65"></span><span class="belmont-wall__brick" style="--belmont-r:-0.79"></span><span class="belmont-wall__brick" style="--belmont-r:-0.57"></span><span class="belmont-wall__brick" style="--belmont-r:0.85"></span><span class="belmont-wall__brick" style="--belmont-r:0.66"></span><span class="belmont-wall__brick" style="--belmont-r:0.61"></span><span class="belmont-wall__brick belmont-wall__brick--half" style="--belmont-r:0.60"></span><span class="belmont-wall__brick" style="--belmont-r:-0.61"></span><span class="belmont-wall__brick" style="--belmont-r:-0.38"></span><span class="belmont-wall__brick" style="--belmont-r:0.25"></span><span class="belmont-wall__brick" style="--belmont-r:0.46"></span><span class="belmont-wall__brick" style="--belmont-r:0.71"></span><span class="belmont-wall__brick" style="--belmont-r:0.76"></span><span class="belmont-wall__brick" style="--belmont-r:-0.83"></span><span class="belmont-wall__brick" style="--belmont-r:0.21"></span><span class="belmont-wall__brick" style="--belmont-r:0.34"></span><span class="belmont-wall__brick" style="--belmont-r:0.01"></span><span class="belmont-wall__brick" style="--belmont-r:-0.64"></span><span class="belmont-wall__brick belmont-wall__brick--half" style="--belmont-r:-0.05"></span><span class="belmont-wall__brick" style="--belmont-r:-0.82"></span><span class="belmont-wall__brick" style="--belmont-r:0.87"></span><span class="belmont-wall__brick" style="--belmont-r:0.73"></span><span class="belmont-wall__brick" style="--belmont-r:0.10"></span><span class="belmont-wall__brick" style="--belmont-r:-0.40"></span><span class="belmont-wall__brick" style="--belmont-r:0.82"></span><span class="belmont-wall__brick" style="--belmont-r:0.14"></span><span class="belmont-wall__brick" style="--belmont-r:0.76"></span><span class="belmont-wall__brick" style="--belmont-r:0.70"></span><span class="belmont-wall__brick" style="--belmont-r:0.02"></span><span class="belmont-wall__brick" style="--belmont-r:-0.17"></span><span class="belmont-wall__brick belmont-wall__brick--half" style="--belmont-r:0.20"></span><span class="belmont-wall__brick" style="--belmont-r:-0.14"></span><span class="belmont-wall__brick" style="--belmont-r:-0.68"></span><span class="belmont-wall__brick" style="--belmont-r:-0.39"></span><span class="belmont-wall__brick" style="--belmont-r:0.63"></span><span class="belmont-wall__brick" style="--belmont-r:-0.91"></span>
+        </button>
+        <div class="belmont-secret__prize" data-prize hidden>
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="30" cy="38" rx="20" ry="14"/><path d="M44 30l10-12M52 14a3 3 0 1 1 4 4M50 20a3 3 0 1 1-4-4"/><path d="M18 34q6-6 14-4"/></svg>
+          <div class="belmont-icon3d belmont-icon3d--prize" data-icon3d="carne" tabindex="0" role="img" aria-label="Carne asada en 3D: arrástrala para girarla"></div>
+          <p><strong>Carne asada en la pared.</strong> Clásico de la saga: recupera la vida.</p>
+          <button class="atom-btn atom-btn--secondary atom-btn--filled" type="button" data-open-secret>Entrar en la sala secreta</button>
+        </div>
+      </div>
+      <dialog class="belmont-dialog" data-secret aria-labelledby="sala-t">
+        <p class="belmont-kicker">Sala secreta</p>
+        <h2 class="belmont-h2" id="sala-t">Has encontrado <em>la cámara</em></h2>
+        <div class="belmont-prose">
+          <p data-secret-key hidden><strong>Traes la llave del candelabro:</strong> el cofre se abre.</p>
+          <p>Prueba en cualquier parte de la página el código más famoso de Konami: <span class="belmont-keys">↑ ↑ ↓ ↓ ← → ← → B A</span>.</p>
+        </div>
+        <form method="dialog"><button class="atom-btn atom-btn--primary atom-btn--filled" type="submit">Salir</button></form>
+      </dialog>
+    </section>
+
+    <!-- 7 · MÚSICA Y CIFRAS -->
+    <section class="belmont-section belmont-grid belmont-music" data-stage-id="07" aria-labelledby="musica-t">
+      <div class="belmont-music__text">
+        <p class="belmont-kicker">Banda sonora</p>
+        <h2 class="belmont-h2" id="musica-t">Órgano, cuerdas y <em>sangre</em></h2>
+        <div class="belmont-prose">
+          <p>Masanori Adachi y Taro Kudo escribieron piezas nuevas y rearreglaron temas clásicos de la saga para el chip de sonido de Sony que llevaba la consola. El resultado sonaba a sala de conciertos encerrada en un cartucho.</p>
+        </div>
+      </div>
+      <div class="belmont-music__eq">
+        <div class="belmont-eq" data-eq aria-hidden="true">
+          <span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span>
+        </div>
+        <p class="belmont-eq__caption">8 CANALES · LA VELOCIDAD DE TU SCROLL ES EL VOLUMEN</p>
+      </div>
+      <div class="belmont-stats">
+        <div class="belmont-stats__cell"><div class="atom-stat atom-stat--accent"><span class="atom-stat__number" data-count="11">11</span><span class="atom-stat__label">fases</span></div></div>
+        <div class="belmont-stats__cell"><div class="atom-stat"><span class="atom-stat__number" data-count="8">8</span><span class="atom-stat__label">direcciones de látigo</span></div></div>
+        <div class="belmont-stats__cell"><div class="atom-stat"><span class="atom-stat__number" data-count="16">16</span><span class="atom-stat__label">bits</span></div></div>
+        <div class="belmont-stats__cell"><div class="atom-stat"><span class="atom-stat__number" data-count="1991">1991</span><span class="atom-stat__label">lanzamiento en Japón</span></div></div>
+      </div>
+    </section>
+
+    <!-- 8 · FICHA Y CURIOSIDADES -->
+    <section class="belmont-section belmont-grid belmont-sheet" data-stage-id="08" aria-labelledby="ficha-t">
+      <div class="belmont-sheet__head">
+        <p class="belmont-kicker">Ficha técnica</p>
+        <h2 class="belmont-h2" id="ficha-t">El cartucho</h2>
+      </div>
+      <div class="belmont-sheet__table atom-table__container atom-table--resp" role="region" aria-label="Ficha técnica de Super Castlevania IV" tabindex="0">
+        <table class="atom-table">
+          <tbody>
+            <tr><th class="atom-table__th" scope="row">Desarrollo y edición</th><td class="atom-table__td">Konami</td></tr>
+            <tr><th class="atom-table__th" scope="row">Dirección</th><td class="atom-table__td">Masahiro Ueno</td></tr>
+            <tr><th class="atom-table__th" scope="row">Producción</th><td class="atom-table__td">Kazumi Kitaue</td></tr>
+            <tr><th class="atom-table__th" scope="row">Diseño</th><td class="atom-table__td">Kazumichi Ichihara</td></tr>
+            <tr><th class="atom-table__th" scope="row">Música</th><td class="atom-table__td">Masanori Adachi y Taro Kudo</td></tr>
+            <tr><th class="atom-table__th" scope="row">Japón</th><td class="atom-table__td">31 de octubre de 1991 (Super Famicom)</td></tr>
+            <tr><th class="atom-table__th" scope="row">Norteamérica</th><td class="atom-table__td">Diciembre de 1991</td></tr>
+            <tr><th class="atom-table__th" scope="row">Europa</th><td class="atom-table__td">1992</td></tr>
+            <tr><th class="atom-table__th" scope="row">Reediciones</th><td class="atom-table__td">Consola Virtual de Wii, Wii U y New 3DS; Super Nintendo Mini; Castlevania Anniversary Collection (2019)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="belmont-sheet__faq">
+        <details class="mol-disclosure" name="curiosidades">
+          <summary class="mol-disclosure__summary">¿Cómo se llama en Japón?</summary>
+          <div class="mol-disclosure__content">Akumajō Dracula, «el castillo demoníaco de Drácula», el mismo título que el primer juego de la saga.</div>
+        </details>
+        <details class="mol-disclosure" name="curiosidades">
+          <summary class="mol-disclosure__summary">¿Qué cambió fuera de Japón?</summary>
+          <div class="mol-disclosure__content">Las versiones internacionales retiraron las cruces de varios fondos y tiñeron de verde la sangre de los pinchos.</div>
+        </details>
+        <details class="mol-disclosure" name="curiosidades">
+          <summary class="mol-disclosure__summary">¿Hubo caminos alternativos?</summary>
+          <div class="mol-disclosure__content">Se plantearon rutas ramificadas como las de Castlevania III, pero no llegaron al juego final: el recorrido es lineal.</div>
+        </details>
+        <details class="mol-disclosure" name="curiosidades">
+          <summary class="mol-disclosure__summary">¿Se puede guardar la partida?</summary>
+          <div class="mol-disclosure__content">No hay pila de guardado: se continúa con una contraseña al final de cada fase.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- 9 · FINAL -->
+    <section class="belmont-finale" data-finale data-stage-id="0B" aria-labelledby="final-t">
+      <div class="belmont-finale__pin" data-finale-pin>
+        <div class="belmont-finale__tower" data-tower aria-hidden="true"></div>
+        <span class="belmont-finale__hunter" data-finale-hunter aria-hidden="true"><span class="belmont-finale__gloria"></span><span class="belmont-icon3d belmont-icon3d--figura" data-icon3d="cazador" data-icon3d-modo="figura" data-facing="0"></span></span>
+        <div class="belmont-grid belmont-finale__copy">
+          <div>
+            <p class="belmont-kicker belmont-kicker--center">Fase B</p>
+            <h2 class="belmont-finale__end" id="final-t" data-end>Ha caído</h2>
+            <p class="belmont-finale__line">El castillo se derrumba al amanecer. Dentro de cien años, volverá a levantarse.</p>
+            <div class="belmont-finale__actions">
+              <a class="atom-btn atom-btn--primary atom-btn--filled" href="#prologo">Volver a jugar</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="belmont-footer belmont-grid">
+    <div>
+      <p>Homenaje no oficial y sin ánimo de lucro. Castlevania y Super Castlevania IV son marcas de Konami. Las ilustraciones de esta página son originales y no reproducen material del juego.</p>
+      <p class="belmont-footer__credit">Diseñado y desarrollado por José Luis Pizarro · SYX · tema «belmont»</p>
+    </div>
+  </footer>
+
+  <script src="vendor/gsap.min.js" defer></script>
+  <script src="vendor/ScrollTrigger.min.js" defer></script>
+  <script src="vendor/MotionPathPlugin.min.js" defer></script>
+  <script src="vendor/SplitText.min.js" defer></script>
+  <script src="vendor/lenis.min.js" defer></script>
+  <script src="vendor/lenis-snap.min.js" defer></script>
+  <script src="js/orquestador.js" defer></script>
+  <script type="module" src="js/belmont.js"></script>
+</body>
+</html>

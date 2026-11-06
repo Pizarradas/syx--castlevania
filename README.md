@@ -306,3 +306,27 @@ Medido en Chrome sin caché, con 4G lento (1,6 Mbps, 150 ms) y gzip en el texto,
 - **Hilo principal**: el atlas calculaba la posición de cada hito con ~8.000 llamadas a `getPointAtLength` (1 s); ahora ~250. `webgl()` creaba un contexto de prueba en cada llamada (siete, sin soltar): ahora se mira una vez y se libera.
 - Probado y descartado: precargar los GLB (competían con la pantalla de inicio: 9,9 s), compilar los shaders por adelantado (`compileAsync`: sin mejora medible, o peor con los iconos) y recortar más las fuentes (−5 %).
 - GitHub Pages: `.nojekyll` en la raíz; todas las rutas son relativas, así que funciona también como página de proyecto (`usuario.github.io/repositorio/`).
+
+## v32 · Aviso de resolución y versión ligera para móvil
+- **Aviso** en la pantalla de inicio: «mejor experiencia en ordenador a partir de 1280 × 720»; si la ventana es más pequeña, sugiere ampliarla; en la versión ligera, explica qué se queda fuera.
+- **Versión ligera** (`html.is-lite`) en pantallas de hasta 767 px, o táctiles de hasta 1023 px: sin 3D (no se descargan ni three.js ni los modelos: se ven las ilustraciones SVG de reserva), sin el grano a pantalla completa, sin desenfoques ni sombras de filtro en capas grandes o en movimiento, sin desenfoque de fondo, cielo 2D a resolución CSS y 14 luciérnagas en lugar de 60. Las pruebas, el texto y la navegación son los mismos. `?completa` la desactiva y `?lite` la fuerza, para probar.
+- Las pruebas del bosque solo miran sus tarjetas cuando la pista está en pantalla (antes, en cada fotograma de toda la página).
+- Móvil emulado (390 × 844, CPU ×4 más lenta, 4G lento): lista en 7,2 s (antes 17,4), 620 KB (antes 1.546), scroll a 25 fps (antes 1).
+
+## v33 · La C del título y repaso de textos en móvil
+- Título: durante la entrada, letra a letra, el degradado se pintaba dos veces (en la palabra y en cada letra, desalineados) y aparecía una C fantasma más clara. Ahora, troceado, solo pintan las letras; las paradas del degradado van en em y se compensan con la ampliación de la caja de cada letra, así que el color es idéntico durante la entrada y en reposo.
+- Móvil, revisado a 320, 360, 390, 414 px, 667 × 375 y 768 px, sin desbordes de texto ni de página:
+  - el lacre de la carta, que espera escalado antes de caer, ensanchaba la página 17–22 px: la sección se recorta por los lados;
+  - «Ha caído» cabe hasta en 320 px;
+  - el IV queda tras el texto de la portada como marca de agua, sin taparlo, y la luna se encoge para no quedar detrás del texto;
+  - las armas del arsenal van en 3 + 2 con los nombres enteros (antes «Cro-nó-me-tro»).
+- El foco que se lleva por programa a la explicación que se abre ya no dibuja un recuadro pegado al texto.
+
+## v34 · Sonido: tema principal y efectos
+- **Tema original**, «La noche de 1691» (no es música del juego): re menor, 132 ppm, 16 compases en bucle (29 s), con órgano, clave, bajo, cuerdas, campanas y batería. Está escrito como datos MIDI en `js/tema.js` (paso, duración, nota, velocidad).
+- **Motor** (`js/sonido.js`, WebAudio): instrumentos sintetizados al estilo del chip de 16 bits (pulsos, sierras, FM para las campanas, ruido para la percusión), reverberación de nave generada, compresor y filtro de calidez. Las notas se programan con el reloj de audio, con 0,25 s de adelanto, y `gsap.ticker` despierta al programador. Sin pestaña a la vista, el sonido se suspende.
+- **Efectos** escritos también como notas: inicio, látigo (al restallar), vela, corazón, salto, caída, acierto, fallo, prueba superada, arma, golpe y secreto (muro y código Konami).
+- **Activación**: apagado por defecto, con un interruptor en la pantalla de inicio, otro en el HUD y otro en la banda sonora; la elección se recuerda. El AudioContext se crea dentro del gesto (clic o tecla), y si se vuelve con el sonido activado, arranca con el primer clic o tecla. `sonido.js` y `tema.js` solo se descargan si se activa.
+- **Banda sonora**: con el tema sonando, el ecualizador muestra sus frecuencias reales (AnalyserNode). Enlace para descargar el MIDI (`audio/la-noche-de-1691.mid`, que genera `node tools-build/midi.mjs` desde la misma partitura).
+- `tools-build/oir.html` renderiza el tema fuera de tiempo real (OfflineAudioContext) para comprobar niveles: pico 0,61–0,66, sin recortes.
+- El HUD deja de estar entero oculto a los lectores de pantalla: el interruptor de sonido es accesible y el resto sigue oculto. En móvil estrecho, solo la nota (tachada si está apagado).

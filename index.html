@@ -44,23 +44,26 @@
     <span class="belmont-intro__curtain belmont-intro__curtain--r" data-curtain></span>
     <p class="belmont-intro__brand">✠ Transilvania · 1691 ✠</p>
     <button class="belmont-intro__start" type="button" data-start>PUSH START</button>
+    <button class="belmont-intro__sound belmont-sound" type="button" data-sound-toggle aria-pressed="false"><span aria-hidden="true">♪</span> Sonido: <span data-sound-label>NO</span></button>
     <p class="belmont-intro__note">Homenaje no oficial. Pulsa el botón, cualquier tecla o desplázate para entrar.</p>
+    <p class="belmont-intro__res" data-res><span class="belmont-intro__res-pc">Mejor experiencia en ordenador, con una pantalla de <strong>1280 × 720</strong> o más.</span><span class="belmont-intro__res-pequena">Tu ventana es pequeña: amplíala o usa pantalla completa (F11) para verla como fue pensada.</span><span class="belmont-intro__res-lite">Versión ligera para móvil: sin 3D ni efectos pesados. La experiencia completa, en ordenador a partir de <strong>1280 × 720</strong>.</span></p>
   </div>
 
   <!-- HUD -->
-  <div class="belmont-hud" aria-hidden="true">
-    <div class="belmont-hud__group">
+  <div class="belmont-hud">
+    <div class="belmont-hud__group" aria-hidden="true">
       <span><span class="belmont-hud__label">SCORE-</span><span data-score>000000</span></span>
       <span class="belmont-hud__label">STAGE <span data-stage>01</span></span>
     </div>
-    <div class="belmont-hud__bars">
+    <div class="belmont-hud__bars" aria-hidden="true">
       <span class="belmont-hud__bar"><span class="belmont-hud__label">PLAYER</span><span class="belmont-hud__meter"><span class="belmont-hud__fill" data-player></span></span></span>
       <span class="belmont-hud__bar"><span class="belmont-hud__label">ENEMY</span><span class="belmont-hud__meter"><span class="belmont-hud__fill belmont-hud__fill--enemy" data-enemy></span></span></span>
     </div>
     <div class="belmont-hud__group">
-      <span class="belmont-hud__sub" data-hud-sub title="Arma secundaria"></span>
-      <span class="belmont-hud__heart">♥-<span data-hearts>05</span></span>
-      <span class="belmont-hud__label belmont-hud__time">TIME <span data-time>0500</span></span>
+      <button class="belmont-hud__sound belmont-sound" type="button" data-sound-toggle aria-pressed="false" aria-label="Sonido"><span aria-hidden="true">♪</span><span class="belmont-hud__sound-state" data-sound-label>NO</span></button>
+      <span class="belmont-hud__sub" data-hud-sub title="Arma secundaria" aria-hidden="true"></span>
+      <span class="belmont-hud__heart" aria-hidden="true">♥-<span data-hearts>05</span></span>
+      <span class="belmont-hud__label belmont-hud__time" aria-hidden="true">TIME <span data-time>0500</span></span>
     </div>
   </div>
 
@@ -567,7 +570,12 @@
         <div class="belmont-eq" data-eq aria-hidden="true">
           <span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span><span class="belmont-eq__bar"></span>
         </div>
-        <p class="belmont-eq__caption">8 CANALES · LA VELOCIDAD DE TU SCROLL ES EL VOLUMEN</p>
+        <p class="belmont-eq__caption" data-eq-caption>8 CANALES · LA VELOCIDAD DE TU SCROLL ES EL VOLUMEN</p>
+        <div class="belmont-music__player">
+          <button class="belmont-music__play belmont-sound" type="button" data-sound-toggle aria-pressed="false"><span aria-hidden="true">♪</span> Tocar «La noche de 1691»: <span data-sound-label>NO</span></button>
+          <a class="belmont-music__midi" href="audio/la-noche-de-1691.mid" download>Descargar el MIDI</a>
+        </div>
+        <p class="belmont-music__note">Un tema original de esta página, compuesto al estilo de aquel chip y tocado aquí mismo por tu navegador. No es la banda sonora del juego.</p>
       </div>
       <div class="belmont-stats">
         <div class="belmont-stats__cell"><div class="atom-stat atom-stat--accent"><span class="atom-stat__number" data-count="11">11</span><span class="atom-stat__label">fases</span></div></div>

@@ -1,0 +1,2427 @@
+/* capa: prototipo — CSS de una app que consume SYX (tema base example-01) · proyecto «belmont»
+   Super Castlevania IV · homenaje no oficial.
+   Orden: 1) identidad (override de tokens semánticos, fuera de capa)
+          2) tokens del proyecto --belmont-* (fuera de capa, leen semánticos)
+          3) reglas en @layer syx.app (solo leen --belmont-*)                    */
+@layer syx.reset, syx.base, syx.tokens, syx.atoms, syx.molecules, syx.organisms, syx.app, syx.utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   0 · Letra — archivos medidos con gridcalc font (perfiles con SHA-1)
+   EB Garamond 400 · sha1 c3b16621ad · xh 0.405 · char_em(es) 0.374
+   Cinzel 900      · sha1 46694920e9 · «CASTLEVANIA» = 7.484em (muestra, con kerning)
+   UnifrakturMaguntia · sha1 bee1536e58 · «Castlevania» = 4.659em (muestra; sin kerning en la fuente)
+   ───────────────────────────────────────────────────────────── */
+@font-face { font-family: "Belmont Garamond"; src: url("../fonts/eb-garamond-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Belmont Garamond"; src: url("../fonts/eb-garamond-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Belmont Garamond"; src: url("../fonts/eb-garamond-latin-400-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Belmont Garamond"; src: url("../fonts/eb-garamond-latin-500-italic.woff2") format("woff2"); font-weight: 500; font-style: italic; font-display: swap; }
+@font-face { font-family: "Belmont Cinzel"; src: url("../fonts/cinzel-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Belmont Cinzel"; src: url("../fonts/cinzel-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Belmont Cinzel"; src: url("../fonts/cinzel-latin-900-normal.woff2") format("woff2"); font-weight: 900; font-display: swap; }
+@font-face { font-family: "Belmont Fraktur"; src: url("../fonts/unifrakturmaguntia-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Belmont Rocker"; src: url("../fonts/new-rocker-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Belmont Fell"; src: url("../fonts/im-fell-english-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Belmont Fell"; src: url("../fonts/im-fell-english-latin-400-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Belmont HUD"; src: url("../fonts/tiny5-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+
+/* ─────────────────────────────────────────────────────────────
+   1 · Identidad «belmont»: override de tokens semánticos (CONSUMING §6)
+   Noche violeta · hueso · carmesí · cera de vela · luna.  Dark-first:
+   se repite en el modo oscuro y en la preferencia del sistema.
+   ───────────────────────────────────────────────────────────── */
+:root,
+:root[data-theme="dark"],
+:root:not([data-theme="light"]) {
+  color-scheme: dark;
+
+  --semantic-color-bg-primary: oklch(0.11 0.012 300);
+  --semantic-color-bg-secondary: oklch(0.15 0.018 300);
+  --semantic-color-bg-tertiary: oklch(0.2 0.024 300);
+  --semantic-color-bg-emphasis: oklch(0.065 0.01 300);
+  --semantic-color-bg-inverse: oklch(0.88 0.03 80);
+
+  --semantic-color-text-primary: oklch(0.88 0.03 80);
+  --semantic-color-text-secondary: oklch(0.75 0.03 75);
+  --semantic-color-text-tertiary: oklch(0.62 0.028 70);
+  --semantic-color-text-inverse: oklch(0.11 0.012 300);
+  --semantic-color-text-on-primary: oklch(0.93 0.02 80);
+
+  --semantic-color-primary: oklch(0.48 0.18 24);
+  --semantic-color-primary-strong: oklch(0.36 0.14 22);
+  --semantic-color-primary-text: oklch(0.66 0.18 26);
+  --semantic-color-on-primary: oklch(0.93 0.02 80);
+  --semantic-color-on-primary-strong: oklch(0.93 0.02 80);
+  --semantic-color-state-hover-primary: oklch(0.54 0.19 25);
+  --semantic-color-on-state-hover-primary: oklch(0.93 0.02 80);
+
+  --semantic-color-secondary: oklch(0.76 0.11 76);
+  --semantic-color-secondary-strong: oklch(0.64 0.11 70);
+  --semantic-color-secondary-text: oklch(0.78 0.11 78);
+  --semantic-color-on-secondary: oklch(0.11 0.012 300);
+
+  --semantic-color-tertiary: oklch(0.84 0.03 230);
+  --semantic-color-tertiary-text: oklch(0.84 0.03 230);
+  --semantic-color-on-tertiary: oklch(0.14 0.025 305);
+
+  --semantic-color-quaternary: oklch(0.42 0.1 305);
+  --semantic-color-quaternary-text: oklch(0.7 0.09 305);
+  --semantic-color-on-quaternary: oklch(0.97 0.01 85);
+
+  --semantic-color-border-subtle: oklch(0.22 0.02 300);
+  --semantic-color-border-default: oklch(0.3 0.03 300);
+  --semantic-color-border-strong: oklch(0.48 0.04 300);
+  --semantic-color-border-focus: oklch(0.76 0.11 76);
+  --semantic-color-state-focus: oklch(0.76 0.11 76);
+  --semantic-focus-ring-color: oklch(0.76 0.11 76);
+
+  --semantic-color-link-default: oklch(0.78 0.11 78);
+  --semantic-color-link-hover: oklch(0.88 0.03 80);
+  --semantic-color-link-visited: oklch(0.7 0.09 305);
+  --semantic-color-selection-bg: oklch(0.48 0.18 24);
+  --semantic-color-selection-text: oklch(0.93 0.02 80);
+
+  --semantic-font-family-primary: "Belmont Garamond", Georgia, "Times New Roman", serif;
+  --semantic-font-family-primary-bold: "Belmont Garamond", Georgia, "Times New Roman", serif;
+  --semantic-font-family-heading: "Belmont Cinzel", "Trajan Pro", Georgia, serif; /* títulos de componente */
+  --semantic-font-family-heading-md: "Belmont Cinzel", "Trajan Pro", Georgia, serif;
+  --semantic-font-family-mono: "Belmont HUD", "Press Start 2P", ui-monospace, monospace; /* Tiny5: mayúsculas acentuadas de verdad (Press Start 2P encoge Ó, É, Í) */
+
+  --semantic-border-radius-sm: var(--semantic-border-radius-none);
+  --semantic-border-radius-default: var(--semantic-border-radius-none);
+  --semantic-border-radius-lg: var(--semantic-border-radius-none);
+  --semantic-border-radius-xl: var(--semantic-border-radius-none);
+  --theme-radius: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   2 · Tokens del proyecto. Cada número sale de gridcalc (L1):
+   compose --font eb-garamond-regular --lang es --use reading
+           --body 18,22 --type-ratio 1.5 --heading-steps 5 --card-chars 30
+   ───────────────────────────────────────────────────────────── */
+:root {
+  /* letra */
+  --belmont-body-size: clamp(1.125rem, 1.0417rem + 0.3704vw, 1.375rem);   /* 18 → 22 px */
+  --belmont-leading: 1.556;                                               /* u 28 → 36 px */
+  --belmont-measure: 27.567em;                                            /* 70 car. reales, ninguna > 80 */
+  --belmont-step-1: clamp(1.6875rem, 1.5625rem + 0.5556vw, 2.0625rem);    /* escala 1.5 */
+  --belmont-step-2: clamp(2.5313rem, 2.3438rem + 0.8333vw, 3.0938rem);
+  --belmont-step-3: clamp(3.7969rem, 3.5156rem + 1.25vw, 4.6406rem);
+  --belmont-step-4: clamp(5.6953rem, 5.2734rem + 1.875vw, 6.9609rem);
+  --belmont-step-5: clamp(8.543rem, 7.9102rem + 2.8125vw, 10.4414rem);
+  --belmont-lh-step-1: 1.33;
+  --belmont-lh-step-2: 1.24;
+  --belmont-lh-step-3: 1.18;
+  --belmont-lh-step-4: 1.14;
+  --belmont-hud-size: 1rem;  /* Tiny5 se dibuja en una rejilla de 8 px por em: 16 px = 2 px por píxel, nítido */
+  --belmont-hud-size-lg: 1.5rem;
+  /* Cinzel 900: «CASTLEVANIA» mide 7.484em → 100cqi / 7.484 */
+  --belmont-title-fit: 21.46cqi;   /* Fraktur: 100 / 4.659 */
+  /* h2: la palabra más larga (8 versales Cinzel, 0.68em) cabe en 288 px → 288 / 5.44 ≈ 14vw a 320 */
+  --belmont-h2-fit: 15vw;
+  /* «Ha caído» en Fraktur ≈ 8 × 0.42em = 3.4em → cabe en el ancho útil con 24vw */
+  --belmont-end-fit: 24vw;
+  --belmont-tracking-caps: var(--semantic-letter-spacing-wider);
+
+  /* cadena de proximidad (L5): micro < inner < padding < gutter ≤ margen < sección */
+  --belmont-micro: 0.25rem;
+  --belmont-inner: 0.5rem;
+  --belmont-padding: clamp(0.875rem, 0.7917rem + 0.3704vw, 1.125rem);
+  --belmont-gutter: clamp(1rem, 0.5833rem + 1.8519vw, 2.25rem);
+  --belmont-margin: clamp(1rem, -1.1667rem + 9.6296vw, 7.5rem);
+  --belmont-section: clamp(7rem, 6.3333rem + 2.963vw, 9rem);
+  --belmont-max: 90rem;   /* 1440: el contenido para de crecer (1200 útil) */
+  --belmont-borde: max(var(--belmont-margin), calc((100vw - var(--belmont-max)) / 2 + var(--belmont-margin))); /* borde del contenido: lo fijo (HUD, paneles) se alinea con él y no se va a la esquina de un monitor ultraancho */
+  --belmont-col: calc((var(--belmont-max) - 2 * var(--belmont-margin) - 11 * var(--belmont-gutter)) / 12);  /* 67 px a 1440 · col/gutter 1.86 ≥ 1.5 (L6) */
+
+  /* superficies */
+  --belmont-bg: var(--semantic-color-bg-primary);
+  --belmont-bg-deep: var(--semantic-color-bg-emphasis);
+  --belmont-surface: var(--semantic-color-bg-secondary);
+  --belmont-surface-2: var(--semantic-color-bg-tertiary);
+  --belmont-ink: var(--semantic-color-text-primary);
+  --belmont-ink-soft: var(--semantic-color-text-secondary);
+  --belmont-ink-mute: var(--semantic-color-text-tertiary);
+  --belmont-blood: var(--semantic-color-primary);
+  --belmont-blood-deep: var(--semantic-color-primary-strong);
+  --belmont-blood-text: var(--semantic-color-primary-text);
+  --belmont-wax: var(--semantic-color-secondary);
+  --belmont-wax-text: var(--semantic-color-secondary-text);
+  --belmont-moon: var(--semantic-color-tertiary);
+  --belmont-violet: var(--semantic-color-quaternary);
+  --belmont-line: var(--semantic-color-border-default);
+  --belmont-line-soft: var(--semantic-color-border-subtle);
+  --belmont-line-strong: var(--semantic-color-border-strong);
+
+  --belmont-font-body: var(--semantic-font-family-primary);
+  --belmont-font-display: var(--semantic-font-family-heading);
+  --belmont-font-numeral: "Belmont Rocker", var(--belmont-font-display); /* el IV: gótico de remates afilados, legible como número romano */
+  --belmont-font-hud: var(--semantic-font-family-mono);
+  --belmont-font-gothic: "Belmont Fraktur", "Old English Text MT", var(--semantic-font-family-heading);
+  --belmont-font-letter: "Belmont Fell", var(--semantic-font-family-primary); /* carta y cuaderno: imprenta del XVII */
+  --belmont-arch: polygon(0% 100%, 0% 38%, 4.2% 25.5%, 8.3% 20.5%, 12.5% 16.8%, 16.7% 13.7%, 20.8% 11.2%, 25.0% 9.0%, 29.2% 7.0%, 33.3% 5.3%, 37.5% 3.7%, 41.7% 2.4%, 45.8% 1.1%, 50.0% -0.0%, 54.2% 1.1%, 58.3% 2.4%, 62.5% 3.7%, 66.7% 5.3%, 70.8% 7.0%, 75.0% 9.0%, 79.2% 11.2%, 83.3% 13.7%, 87.5% 16.8%, 91.7% 20.5%, 95.8% 25.5%, 100.0% 38.0%, 100% 100%);
+  --belmont-lantern-size: 44rem;
+  --belmont-grain-opacity: 0.09;
+  --belmont-drip-h: clamp(5rem, 3rem + 5vw, 10rem);
+
+  --belmont-border: var(--semantic-border-width-thin);
+  --belmont-border-thick: var(--semantic-border-width-thick);
+
+  --belmont-ease: var(--semantic-easing-out);
+  --belmont-dur: var(--semantic-duration-base);
+  --belmont-dur-slow: var(--semantic-duration-slow);
+
+  /* piezas */
+  --belmont-hud-h: 3.25rem;
+  --belmont-hero-min: 100svh;
+  --belmont-moon-size: clamp(11rem, 6rem + 26vw, 34rem);
+  --belmont-rose-size: min(100%, 34rem, 58svh); /* en ventanas bajas la rosa cabe entera sobre el panel de la prueba */
+  --belmont-eq-h: 8rem;
+  --belmont-brick-h: 1.5rem;
+  --belmont-icon: 3rem;
+  --belmont-icon-lg: 4.5rem;
+  --belmont-bar-w: 6.5rem;
+  --belmont-bar-h: 0.5rem;
+  --belmont-mode7-perspective: 38rem;
+  --belmont-mode7-tile: 4rem;
+  --belmont-flicker: 2.4s;
+  --belmont-blink: 1.1s;
+  --belmont-z-sky: 0;
+  --belmont-z-scene: 1;
+  --belmont-z-text: 2;
+  --belmont-z-hud: var(--semantic-z-index-sticky);
+  --belmont-z-intro: var(--semantic-z-index-modal);
+  --belmont-z-skip: var(--semantic-z-index-skip-link);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   3 · Reglas del proyecto
+   ───────────────────────────────────────────────────────────── */
+@layer syx.app {
+  /* syx-reuse-file: retícula de página y piezas escénicas; layout-grid no tiene líneas con nombre ni de inicio (grid 06-casos/syx.md D5) */
+
+  /* O27: lenis.stop() pone overflow: clip en html y la barra clásica de Windows desaparece; reservar su hueco evita que los pines y el HUD salten de ancho al empezar cada prueba */
+  html { scrollbar-gutter: stable; }
+
+  /* syx-reuse: checked syx base body — el tema base usa Inter; el cuerpo del proyecto necesita la medida y el interlineado derivados */
+  .belmont-page {
+    margin: 0;
+    background: var(--belmont-bg);
+    color: var(--belmont-ink);
+    font-family: var(--belmont-font-body);
+    font-size: var(--belmont-body-size);
+    line-height: var(--belmont-leading);
+    overflow-x: clip; /* O26: clip, nunca hidden, con pines */
+  }
+
+  /* syx-reuse: checked atom-link (no salta al contenido) — enlace de salto propio */
+  .belmont-skip {
+    /* syx-allow R03: capa escénica o HUD fijo, sin mixin en CSS plano */
+    position: fixed;
+    inset-block-start: var(--belmont-inner);
+    inset-inline-start: var(--belmont-inner);
+    z-index: var(--belmont-z-skip);
+    padding: var(--belmont-inner) var(--belmont-padding);
+    background: var(--belmont-wax);
+    color: var(--semantic-color-on-secondary);
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    transform: translateY(-200%);
+  }
+  .belmont-skip:focus-visible { transform: none; }
+
+  /* ── Retícula (Grid Spec en el README) ───────────────────────
+     móvil: 6 columnas en uso · ≥64em: 12 = compuesto 3 + 4 con líneas nombradas */
+  .belmont-grid {
+    display: grid;
+    column-gap: var(--belmont-gutter);
+    grid-template-columns:
+      [full-start] calc(var(--belmont-margin) - var(--belmont-gutter))
+      [content-start d3-0 d4-0 d2-0] minmax(0, 1fr) minmax(0, 1fr)
+      [d3-1] minmax(0, 1fr)
+      [d2-1 d4-2] minmax(0, 1fr)
+      [d3-2] minmax(0, 1fr) minmax(0, 1fr)
+      [d3-3 d4-4 d2-2 content-end] calc(var(--belmont-margin) - var(--belmont-gutter)) [full-end];
+  }
+  @media (min-width: 64em) {
+    .belmont-grid {
+      grid-template-columns:
+        [full-start] minmax(calc(var(--belmont-margin) - var(--belmont-gutter)), 1fr)
+        [content-start d3-0 d4-0] minmax(0, var(--belmont-col))
+        repeat(2, minmax(0, var(--belmont-col)))
+        [d4-1] minmax(0, var(--belmont-col))
+        [d3-1] repeat(2, minmax(0, var(--belmont-col)))
+        [d4-2] repeat(2, minmax(0, var(--belmont-col)))
+        [d3-2] minmax(0, var(--belmont-col))
+        [d4-3] repeat(3, minmax(0, var(--belmont-col)))
+        [d3-3 d4-4 content-end] minmax(calc(var(--belmont-margin) - var(--belmont-gutter)), 1fr) [full-end];
+    }
+  }
+  .belmont-grid > * { grid-column: content; min-inline-size: 0; }
+  .belmont-full { grid-column: full; }
+
+  .belmont-section {
+    position: relative;
+    padding-block: var(--belmont-section);
+  }
+
+  /* ── Tipografía del proyecto ─────────────────────────────── */
+  .belmont-kicker {
+    display: flex;
+    align-items: center;
+    gap: var(--belmont-inner);
+    margin: 0 0 var(--belmont-padding);
+    color: var(--belmont-blood-text);
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    line-height: var(--belmont-leading);
+    letter-spacing: var(--semantic-letter-spacing-wide);
+    text-transform: uppercase;
+  }
+  .belmont-kicker::before { content: "✠"; font-family: var(--belmont-font-body); font-size: 1.6em; line-height: 1; }
+  .belmont-kicker::after { content: ""; flex: 0 1 var(--belmont-bar-w); block-size: var(--belmont-border); background: linear-gradient(to right, currentColor, transparent); }
+  .belmont-kicker--center { justify-content: center; }
+  .belmont-h2 {
+    margin: 0 0 calc(var(--belmont-body-size) * var(--belmont-leading) * 0.75);
+    font-family: var(--belmont-font-gothic);
+    font-weight: 400;
+    font-size: min(var(--belmont-step-3), var(--belmont-h2-fit));
+    line-height: var(--belmont-lh-step-3);
+    letter-spacing: 0;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+    hyphens: auto; /* columnas estrechas: «direcciones» se parte en lugar de salirse */
+    text-shadow: 0 0.06em 0.2em var(--belmont-bg-deep);
+  }
+  .belmont-h2 em { font-family: inherit; font-weight: inherit; font-style: normal; color: var(--belmont-blood-text); } /* el reset de SYX pone em en Garamond: el titular entero va en Fraktur */
+  .belmont-h3 {
+    margin: 0;
+    font-family: var(--belmont-font-display);
+    font-weight: 700;
+    font-size: var(--belmont-step-1);
+    line-height: var(--belmont-lh-step-1);
+  }
+  .belmont-prose { max-inline-size: var(--belmont-measure); }
+  .belmont-prose p { margin: 0 0 0.75lh; text-wrap: pretty; }
+  .belmont-prose p:last-child { margin-block-end: 0; }
+  .belmont-lede {
+    font-size: var(--belmont-step-1);
+    line-height: var(--belmont-lh-step-1);
+    font-style: italic;
+    color: var(--belmont-ink-soft);
+  }
+
+  /* ── HUD (decorativo, aria-hidden) ───────────────────────── */
+  .belmont-hud {
+    /* syx-allow R03: capa escénica o HUD fijo, sin mixin en CSS plano */
+    position: fixed;
+    inset-inline: 0;
+    inset-block-start: 0;
+    z-index: var(--belmont-z-hud);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--belmont-padding);
+    block-size: var(--belmont-hud-h);
+    padding-inline: var(--belmont-borde);
+    background: linear-gradient(to bottom, var(--belmont-bg-deep), color-mix(in oklch, var(--belmont-bg-deep) 0%, transparent));
+    color: var(--belmont-ink);
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .belmont-hud__group { display: flex; align-items: center; gap: var(--belmont-padding); }
+  .belmont-hud__group > * { white-space: nowrap; }
+  .belmont-hud__time { display: none; }
+  @media (min-width: 30em) { .belmont-hud__time { display: inline; } }
+  .belmont-hud__label { color: var(--belmont-ink-mute); }
+  .belmont-hud__bars { display: none; gap: var(--belmont-micro); flex-direction: column; }
+  .belmont-hud__bar {
+    display: grid;
+    grid-template-columns: auto var(--belmont-bar-w);
+    align-items: center;
+    gap: var(--belmont-inner);
+  }
+  .belmont-hud__meter {
+    block-size: var(--belmont-bar-h);
+    background:
+      repeating-linear-gradient(to right, transparent 0 calc(var(--belmont-bar-h) * 0.75), var(--belmont-bg-deep) calc(var(--belmont-bar-h) * 0.75) var(--belmont-bar-h)),
+      var(--belmont-line-soft);
+    overflow: hidden;
+  }
+  .belmont-hud__fill {
+    display: block;
+    block-size: 100%;
+    background: var(--belmont-wax);
+    transform-origin: left center;
+    transform: scaleX(var(--belmont-p, 1));
+  }
+  .belmont-hud__fill--enemy { background: var(--belmont-blood); }
+  .belmont-hud__heart { color: var(--belmont-blood-text); }
+  .belmont-hud__sub { display: inline-grid; place-items: center; inline-size: 2.1em; block-size: 1.6em; border: 2px solid var(--belmont-wax); color: var(--belmont-wax); background: color-mix(in oklch, var(--belmont-bg-deep) 70%, transparent); } /* el marco del arma secundaria, como en el HUD del juego */
+  .belmont-hud__sub svg { inline-size: 1.15em; block-size: 1.15em; }
+  .belmont-hud__vuela { position: fixed; inset-block-start: 0; inset-inline-start: 0; z-index: calc(var(--belmont-z-hud) + 1); color: var(--belmont-wax); filter: drop-shadow(0 0 6px var(--belmont-wax)); pointer-events: none; } /* syx-allow R03: el arma en vuelo hacia el HUD */
+  .belmont-hud__vuela svg { display: block; inline-size: 100%; block-size: 100%; }
+  @media (min-width: 48em) { .belmont-hud__bars { display: flex; } }
+
+  /* ── Intro «PUSH START» ──────────────────────────────────── */
+  .belmont-intro {
+    /* syx-allow R03: capa escénica o HUD fijo, sin mixin en CSS plano */
+    position: fixed;
+    inset: 0;
+    z-index: var(--belmont-z-intro);
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--belmont-gutter);
+    padding: var(--belmont-margin);
+    background: var(--belmont-bg-deep);
+    text-align: center;
+  }
+  .belmont-intro[hidden] { display: none; }
+  .belmont-intro__brand {
+    margin: 0;
+    font-family: var(--belmont-font-display);
+    font-weight: 400;
+    font-size: var(--belmont-step-1);
+    letter-spacing: var(--belmont-tracking-caps);
+    color: var(--belmont-ink-soft);
+  }
+  .belmont-intro__start {
+    padding: var(--belmont-padding) var(--belmont-gutter);
+    border: 0;
+    background: none;
+    color: var(--belmont-wax);
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size-lg);
+    line-height: var(--belmont-leading);
+    cursor: pointer;
+    animation: belmont-blink var(--belmont-blink) steps(2, jump-none) infinite;
+  }
+  .belmont-intro__note {
+    margin: 0;
+    max-inline-size: var(--belmont-measure);
+    color: var(--belmont-ink-mute);
+    font-size: var(--semantic-font-size-body-sm);
+  }
+  .belmont-intro__curtain {
+    /* syx-allow R03: capa escénica o HUD fijo, sin mixin en CSS plano */
+    position: absolute;
+    inset-block: 0;
+    inline-size: 50%;
+    background: linear-gradient(to right, var(--belmont-blood-deep), var(--belmont-blood));
+    transform: scaleX(0);
+    pointer-events: none;
+  }
+  .belmont-intro__curtain--l { inset-inline-start: 0; transform-origin: left; }
+  .belmont-intro__curtain--r { inset-inline-end: 0; transform-origin: right; background: linear-gradient(to left, var(--belmont-blood-deep), var(--belmont-blood)); }
+
+  /* ── HERO ────────────────────────────────────────────────── */
+  .belmont-hero {
+    position: relative;
+    min-block-size: var(--belmont-hero-min);
+    overflow: clip;
+    background: radial-gradient(120% 80% at 70% 20%, var(--belmont-surface-2), var(--belmont-bg) 55%, var(--belmont-bg-deep));
+    container-type: inline-size;
+  }
+  .belmont-hero__sky,
+  .belmont-hero__flash {
+    /* syx-allow R03: capa escénica o HUD fijo, sin mixin en CSS plano */
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    z-index: var(--belmont-z-sky);
+  }
+  .belmont-hero__flash { background: var(--belmont-moon); opacity: 0; mix-blend-mode: soft-light; pointer-events: none; }
+  .belmont-hero__moon {
+    /* syx-allow R03: capa escénica o HUD fijo, sin mixin en CSS plano */
+    position: absolute;
+    inset-block-start: 12%;
+    inset-inline-end: 8%;
+    z-index: var(--belmont-z-sky);
+    inline-size: var(--belmont-moon-size);
+    aspect-ratio: 1;
+    border-radius: var(--semantic-border-radius-circle);
+    background:
+      radial-gradient(18% 18% at 32% 38%, color-mix(in oklch, var(--belmont-ink-mute) 45%, transparent), transparent 70%),
+      radial-gradient(10% 10% at 62% 62%, color-mix(in oklch, var(--belmont-ink-mute) 40%, transparent), transparent 70%),
+      radial-gradient(7% 7% at 58% 28%, color-mix(in oklch, var(--belmont-ink-mute) 35%, transparent), transparent 70%),
+      radial-gradient(circle at 40% 40%, var(--belmont-ink), var(--belmont-moon) 60%, color-mix(in oklch, var(--belmont-blood) 55%, var(--belmont-moon)));
+    box-shadow: 0 0 calc(var(--belmont-moon-size) * 0.35) color-mix(in oklch, var(--belmont-blood) 45%, transparent);
+  }
+  .belmont-hero__castle {
+    /* syx-allow R03: capa escénica o HUD fijo, sin mixin en CSS plano */
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: var(--belmont-z-scene);
+    inline-size: 100%;
+    block-size: auto;
+    pointer-events: none;
+  }
+  .belmont-hero__castle--far { color: var(--belmont-surface-2); }
+  .belmont-hero__castle--mid { color: var(--belmont-surface); }
+  .belmont-hero__castle--near { color: var(--belmont-bg-deep); }
+  .belmont-hero__window { fill: var(--belmont-wax); animation: belmont-flicker var(--belmont-flicker) ease-in-out infinite alternate; }
+  .belmont-hero__fog {
+    /* syx-allow R03: capa escénica o HUD fijo, sin mixin en CSS plano */
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: var(--belmont-z-scene);
+    block-size: 40%;
+    background: linear-gradient(to top, var(--belmont-bg-deep), color-mix(in oklch, var(--belmont-bg) 0%, transparent));
+    pointer-events: none;
+  }
+  .belmont-hero__inner {
+    position: relative;
+    z-index: var(--belmont-z-text);
+    min-block-size: var(--belmont-hero-min);
+    align-content: end;
+    padding-block: calc(var(--belmont-hud-h) + var(--belmont-gutter)) var(--belmont-section);
+  }
+  .belmont-hero__over {
+    margin: 0 0 var(--belmont-padding);
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    line-height: var(--belmont-leading);
+    color: var(--belmont-wax-text);
+  }
+  .belmont-title {
+    position: relative;
+    margin: 0;
+    font-family: var(--belmont-font-display);
+    font-weight: 900;
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
+  .belmont-title__super {
+    display: block;
+    font-size: calc(var(--belmont-title-fit) * 0.34);
+    font-weight: 700;
+    letter-spacing: var(--belmont-tracking-caps);
+    color: var(--belmont-ink-soft);
+  }
+  .belmont-title__main {
+    display: block;
+    font-family: var(--belmont-font-gothic);
+    font-weight: 400;
+    text-transform: none;
+    line-height: 1.04;
+    font-size: min(var(--belmont-title-fit), var(--belmont-step-5) * 1.4);
+    white-space: nowrap;
+    background: linear-gradient(to bottom, var(--belmont-ink) 20%, var(--belmont-blood-text) 62%, var(--belmont-blood-deep) 88%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0.04em 0 var(--belmont-bg-deep));
+  }
+  .belmont-title__main .belmont-word,
+  .belmont-title__main .belmont-char { background: inherit; -webkit-background-clip: text; background-clip: text; }
+  /* los rasgos de la C y la l de Fraktur salen de la caja del carácter: se amplía el área de fondo para no recortarlos */
+  .belmont-title__main .belmont-char { padding: 0.3em 0.14em; margin: -0.3em -0.14em; }
+  /* Ruptura: el numeral sale de la retícula desde la línea d3-2 hasta el borde (full-end) */
+  .belmont-hero__numeral {
+    grid-column: d3-2 / full-end;
+    grid-row: 1;
+    align-self: center;
+    z-index: calc(var(--belmont-z-text) - 1);
+    margin: 0;
+    font-family: var(--belmont-font-numeral);
+    font-weight: 400;
+    font-size: clamp(var(--belmont-step-5), 24vw, calc(var(--belmont-step-5) * 2.6));
+    letter-spacing: 0.02em;
+    line-height: 0.8;
+    /* macizo, como la C de Castlevania: sangre que se oscurece hacia abajo y un filo claro */
+    background: linear-gradient(to bottom, color-mix(in oklch, var(--belmont-blood-text) 80%, var(--belmont-ink)) 0%, var(--belmont-blood) 45%, var(--belmont-blood-deep) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 2px color-mix(in oklch, var(--belmont-bg-deep) 70%, transparent);
+    filter: drop-shadow(0 0.04em 0 var(--belmont-bg-deep)) drop-shadow(0 0 0.2em color-mix(in oklch, var(--belmont-blood) 45%, transparent));
+    padding: 0.08em 0.1em; /* los remates góticos no se recortan */
+    pointer-events: none;
+    user-select: none;
+  }
+  .belmont-hero__copy { grid-row: 1; align-self: end; container-type: inline-size; }
+  .belmont-hero__tag {
+    margin: var(--belmont-gutter) 0 0;
+    max-inline-size: var(--belmont-measure);
+    font-size: var(--belmont-step-1);
+    line-height: var(--belmont-lh-step-1);
+    font-style: italic;
+    color: var(--belmont-ink-soft);
+    text-wrap: balance;
+  }
+  .belmont-hero__cue {
+    display: flex;
+    align-items: center;
+    gap: var(--belmont-inner);
+    margin-block-start: var(--belmont-gutter);
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    color: var(--belmont-ink-mute);
+  }
+  .belmont-hero__cue::after {
+    content: "";
+    inline-size: var(--belmont-bar-w);
+    block-size: var(--belmont-border);
+    background: linear-gradient(to right, var(--belmont-blood), transparent);
+  }
+  @media (min-width: 64em) {
+    .belmont-hero__copy { grid-column: d3-0 / d4-3; } /* solape reglado de 1 módulo con el numeral (O11) */
+  }
+
+  /* ── Prólogo (palabras que se encienden) ─────────────────── */
+  .belmont-prologue { min-block-size: 100svh; align-content: center; }
+  .belmont-prologue__head { margin-block-end: var(--belmont-gutter); }
+  @media (min-width: 64em) {
+    .belmont-prologue__head { grid-column: d3-0 / d4-1; }
+    .belmont-letter { grid-column: d4-1 / d3-3; }
+  }
+
+  /* ── El látigo (operador O9: retícula polar 360/8) ───────── */
+  .belmont-whip { row-gap: var(--belmont-gutter); align-items: center; }
+  .belmont-rose {
+    position: relative;
+    inline-size: var(--belmont-rose-size);
+    aspect-ratio: 1;
+    margin-inline: auto;
+    color: var(--belmont-wax);
+  }
+  .belmont-rose svg { display: block; inline-size: 100%; block-size: 100%; overflow: visible; }
+  .belmont-rose__ray { stroke: currentColor; stroke-linecap: round; fill: none; }
+  .belmont-rose__ring { stroke: var(--belmont-line); fill: none; }
+  .belmont-rose__label {
+    fill: var(--belmont-ink-soft);
+    font-family: var(--belmont-font-hud);
+    font-size: 0.3rem;
+  }
+  .belmont-rose__core { fill: var(--belmont-blood); }
+  .belmont-whip__list {
+    display: grid;
+    gap: var(--belmont-padding);
+    margin: var(--belmont-gutter) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .belmont-whip__item {
+    display: grid;
+    grid-template-columns: var(--belmont-icon) 1fr;
+    gap: var(--belmont-padding);
+    padding-block: var(--belmont-padding);
+    border-block-start: var(--belmont-border) solid var(--belmont-line-soft);
+  }
+  .belmont-whip__num {
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    line-height: var(--belmont-leading);
+    color: var(--belmont-wax-text);
+  }
+  .belmont-whip__item p { margin: 0; color: var(--belmont-ink-soft); }
+  .belmont-whip__item strong { color: var(--belmont-ink); font-weight: 500; }
+  @media (min-width: 64em) {
+    .belmont-whip__visual { grid-column: d4-0 / d3-2; grid-row: 1 / span 2; }
+    .belmont-whip__text { grid-column: d3-2 / d3-3; }
+  }
+
+  /* ── Once fases: el mapa de niveles (la cámara sigue al cazador) ─ */
+  .belmont-stages { padding-block: var(--belmont-section) 0; }
+  .belmont-stages__head { margin-block-end: var(--belmont-gutter); }
+
+  /* ── Modo 7 ──────────────────────────────────────────────── */
+  .belmont-mode7 { padding: 0; }
+  .belmont-mode7__pin {
+    position: relative;
+    display: grid;
+    min-block-size: 100svh;
+    overflow: clip;
+    background: radial-gradient(70% 60% at 50% 35%, var(--belmont-surface-2), var(--belmont-bg-deep));
+  }
+  [data-trial="modo7"] { --belmont-trial-keys: " · ← → para nivelar · Esc para saltar"; }
+  @media (pointer: coarse) { .belmont-trial.is-playing .belmont-trial__goal::after { content: none; } }
+  [data-trial="latigo"] { --belmont-trial-keys: " · Flechas apuntan · Espacio azota · Esc para saltar"; }
+  [data-trial="arsenal"] { --belmont-trial-keys: " · Arrastra o pulsa Intro sobre un arma · Esc para saltar"; }
+  .belmont-mode7__stage {
+    /* syx-allow R03: la sala entera (suelo y pilares); en la prueba se voltea alrededor del cazador */
+    position: absolute;
+    inset: 0;
+    perspective: var(--belmont-mode7-perspective);
+  }
+  .belmont-mode7__hang {
+    /* syx-allow R03: el cazador colgado del látigo, en el centro de la sala; solo durante la prueba */
+    position: absolute;
+    inset-block-start: 14svh; /* el anillo, a media altura como en la fase 4: la sala gira a su alrededor */
+    inset-inline-start: 54%;
+    z-index: 2;
+    inline-size: 0;
+    block-size: 24svh;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s var(--belmont-ease), visibility 0.4s;
+    pointer-events: none;
+  }
+  .is-hanging .belmont-mode7__hang { opacity: 1; visibility: visible; }
+  @media (max-width: 47.99em) { .belmont-mode7__hang { inset-block-start: 5svh; inset-inline-start: 84%; block-size: 14svh; scale: 0.8; transform-origin: 50% 0; } } /* en el móvil cuelga en el margen, sin tapar la prueba */
+  /* el látigo: trenzado, del anillo del techo a la mano del cazador */
+  .belmont-mode7__rope { position: absolute; inset-block: 1.6rem 0; inset-inline-start: -2px; inline-size: 4px; border-radius: 2px; background: repeating-linear-gradient(to bottom, color-mix(in oklch, var(--belmont-wax) 75%, var(--belmont-ink)) 0 6px, color-mix(in oklch, var(--belmont-wax) 35%, var(--belmont-bg-deep)) 6px 9px); box-shadow: 0 0 6px color-mix(in oklch, var(--belmont-wax) 40%, transparent); } /* syx-allow R03 */
+  .belmont-mode7__ring { position: absolute; inset-block-start: 0.2rem; inset-inline-start: -0.9rem; inline-size: 1.8rem; aspect-ratio: 1; border: 4px solid var(--belmont-wax); border-radius: var(--semantic-border-radius-circle); box-shadow: 0 0 12px var(--belmont-wax); } /* syx-allow R03: anillo clavado en el techo */
+  .belmont-mode7__hero { position: absolute; inset-block-start: 100%; inset-inline-start: -2.6rem; inline-size: 5.2rem; block-size: 8rem; margin-block-start: -1.4rem; } /* syx-allow R03: cuelga de la punta del látigo, agarrado por la mano */
+  .is-salvo .belmont-mode7__hang { opacity: 1; visibility: visible; } /* tras ganar sigue a la vista: ha caído a salvo */
+  .belmont-mode7__cornisa {
+    /* syx-allow R03: la cornisa de piedra donde aterriza, bajo los pies, lejos de los pinchos */
+    position: absolute; inset-block-start: calc(100% + 8rem - 1.4rem + 2.6rem); inset-inline-start: -4.4rem; inline-size: 8.8rem; block-size: 1.4rem;
+    visibility: hidden; opacity: 0;
+    background: repeating-linear-gradient(90deg, transparent 0 2.1rem, color-mix(in oklch, var(--belmont-bg-deep) 70%, transparent) 2.1rem 2.2rem), linear-gradient(to bottom, color-mix(in oklch, var(--belmont-ink-soft) 70%, var(--belmont-surface-2)) 0 20%, var(--belmont-surface-2) 20% 80%, var(--belmont-bg-deep) 80%);
+    box-shadow: 0 0.2rem 0 var(--belmont-bg-deep), 0 0 1.2rem color-mix(in oklch, var(--belmont-wax) 30%, transparent);
+    image-rendering: pixelated;
+  }
+  .belmont-mode7__cornisa::after { content: ""; position: absolute; inset-block-start: 100%; inset-inline: 28%; block-size: 60svh; background: repeating-linear-gradient(to bottom, var(--belmont-surface-2) 0 1.1rem, var(--belmont-bg-deep) 1.1rem 1.2rem); opacity: 0.9; } /* syx-allow R03: el pilar que la sostiene */
+  /* el nivel: semicírculo con la franja dorada; la aguja marca cuánto está volcada la sala */
+  .belmont-mode7__level {
+    /* syx-allow R03: instrumento de la prueba, bajo el cazador */
+    position: absolute;
+    inset-block-start: calc(var(--belmont-hud-h) + var(--belmont-gutter));
+    inset-inline-end: var(--belmont-borde);
+    z-index: 2;
+    inline-size: clamp(12rem, 8rem + 10vw, 19rem);
+    padding: var(--belmont-inner) var(--belmont-padding) var(--belmont-padding);
+    background: color-mix(in oklch, var(--belmont-bg-deep) 82%, transparent);
+    border: var(--belmont-border) solid var(--belmont-line);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s var(--belmont-ease), visibility 0.4s;
+  }
+  .is-hanging .belmont-mode7__level { opacity: 1; visibility: visible; }
+  .belmont-mode7__level svg { display: block; inline-size: 100%; block-size: auto; overflow: visible; }
+  .belmont-mode7__arc { fill: none; stroke: var(--belmont-line); stroke-width: 6; }
+  .belmont-mode7__ok { fill: none; stroke: var(--belmont-wax); stroke-width: 10; }
+  .belmont-mode7__ticks line { stroke: var(--belmont-ink-mute); stroke-width: 2; }
+  .belmont-mode7__needle { stroke: var(--belmont-blood-text); stroke-width: 5; stroke-linecap: round; }
+  [data-m7-needle] circle { fill: var(--belmont-blood-text); }
+  .belmont-mode7__hold { fill: none; stroke: var(--belmont-wax); stroke-width: 5; stroke-dasharray: 1; stroke-dashoffset: 1; transform: rotate(-90deg); transform-box: fill-box; transform-origin: center; }
+  .belmont-mode7__levelhint { display: flex; justify-content: space-between; margin: var(--belmont-micro) 0 0; font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); color: var(--belmont-ink-soft); }
+  .belmont-mode7__levelhint span { color: var(--belmont-wax-text); font-size: 1.4em; line-height: 1; }
+  .belmont-mode7__screen {
+    /* syx-allow R03: la «pantalla» de la Super Nintendo: una capa de piedra que gira y escala píxel a píxel */
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    image-rendering: pixelated;
+    -webkit-mask-image: radial-gradient(120% 95% at 54% 30%, black 55%, transparent 100%);
+    mask-image: radial-gradient(120% 95% at 54% 30%, black 55%, transparent 100%);
+  }
+  .belmont-mode7__copy {
+    position: relative;
+    z-index: var(--belmont-z-text);
+    align-content: end;
+    padding-block: calc(var(--belmont-hud-h) + var(--belmont-gutter)) var(--belmont-gutter);
+    text-shadow: 0 0 var(--belmont-padding) var(--belmont-bg-deep);
+  }
+  .belmont-mode7__card {
+    padding: var(--belmont-gutter);
+    background: color-mix(in oklch, var(--belmont-bg-deep) 78%, transparent);
+    border-block-start: var(--belmont-border-thick) solid var(--belmont-blood);
+    backdrop-filter: blur(6px);
+  }
+  .belmont-mode7__readout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--belmont-padding) var(--belmont-gutter);
+    margin-block-start: var(--belmont-padding);
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    color: var(--belmont-wax-text);
+  }
+  @media (min-width: 64em) {
+    .belmont-mode7__card { grid-column: d4-0 / d4-2; }
+  }
+
+  /* ── Música y cifras ─────────────────────────────────────── */
+  .belmont-music { row-gap: var(--belmont-gutter); }
+  .belmont-eq {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--belmont-inner);
+    block-size: var(--belmont-eq-h);
+    padding: var(--belmont-padding);
+    background: var(--belmont-surface);
+    border: var(--belmont-border) solid var(--belmont-line-soft);
+  }
+  .belmont-eq__bar {
+    flex: 1;
+    block-size: 100%;
+    background: linear-gradient(to top, var(--belmont-blood-deep), var(--belmont-blood), var(--belmont-wax));
+    transform-origin: bottom;
+    transform: scaleY(0.08);
+  }
+  .belmont-eq__caption {
+    margin-block-start: var(--belmont-inner);
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    line-height: var(--belmont-leading);
+    color: var(--belmont-ink-mute);
+  }
+  .belmont-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--belmont-gutter);
+    margin-block-start: var(--belmont-section);
+  }
+  /* syx-reuse: checked atom-stat (sin filete superior) — celda propia que lo enmarca */
+  .belmont-stats__cell { border-block-start: var(--belmont-border) solid var(--belmont-line); padding-block-start: var(--belmont-padding); }
+  @media (min-width: 48em) { .belmont-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (min-width: 64em) {
+    .belmont-music__text { grid-column: d3-0 / d4-2; }
+    .belmont-music__eq { grid-column: d3-2 / d3-3; align-self: end; }
+  }
+
+  /* ── Ficha y curiosidades ────────────────────────────────── */
+  .belmont-sheet { row-gap: var(--belmont-gutter); }
+  .belmont-sheet__table { --component-table-min-width: 0; --component-table-bg-th: var(--belmont-surface); --component-table-border-color: var(--belmont-line-soft); }
+  .belmont-sheet__faq {
+    --component-disclosure-border-color: var(--belmont-line);
+    --component-disclosure-summary-color: var(--belmont-ink);
+    --component-disclosure-content-color: var(--belmont-ink-soft);
+  }
+  .belmont-sheet__faq .mol-disclosure + .mol-disclosure { margin-block-start: 0; }
+  @media (min-width: 64em) {
+    .belmont-sheet__head { grid-column: d3-0 / d4-2; }
+    .belmont-sheet__table { grid-column: d3-0 / d4-2; }
+    .belmont-sheet__faq { grid-column: d4-2 / d3-3; grid-row: 2; }
+  }
+
+  /* ── Final: el castillo se derrumba ──────────────────────── */
+  .belmont-finale { padding: 0; }
+  .belmont-finale__pin {
+    position: relative;
+    display: grid;
+    min-block-size: 100svh;
+    overflow: clip;
+    background: radial-gradient(90% 70% at 50% 100%, color-mix(in oklch, var(--belmont-blood) 35%, var(--belmont-bg-deep)), var(--belmont-bg-deep) 70%);
+  }
+  .belmont-finale__tower {
+    /* syx-allow R03: capa escénica o HUD fijo, sin mixin en CSS plano */
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-end: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--belmont-bricks, 9), var(--belmont-brick-h));
+    grid-auto-rows: var(--belmont-brick-h);
+    gap: var(--belmont-micro);
+    transform: translateX(-50%);
+  }
+  .belmont-finale__brick.is-gap { visibility: hidden; }
+  .belmont-finale__brick { background: var(--belmont-surface-2); border: var(--belmont-border) solid var(--belmont-line); }
+  .belmont-finale__brick.is-lit { background: var(--belmont-wax); }
+  .belmont-finale__copy {
+    position: relative;
+    z-index: var(--belmont-z-text);
+    align-content: start; /* arriba, en el cielo: abajo queda la cima con el cazador */
+    text-align: center;
+    padding-block: calc(var(--belmont-hud-h) + var(--belmont-gutter)) var(--belmont-section);
+  }
+  .belmont-finale__copy .belmont-kicker, .belmont-finale__end, .belmont-finale__line { text-shadow: 0 0.04em 0.35em color-mix(in oklch, var(--belmont-bg-deep) 85%, transparent), 0 0 1.2em color-mix(in oklch, var(--belmont-bg-deep) 55%, transparent); } /* con el día detrás, el texto claro necesita su sombra */
+  .belmont-finale__end {
+    margin: 0;
+    font-family: var(--belmont-font-gothic);
+    font-weight: 400;
+    font-size: min(var(--belmont-step-5), var(--belmont-end-fit));
+    white-space: nowrap;
+    line-height: 1;
+    letter-spacing: var(--semantic-letter-spacing-tight);
+  }
+  .belmont-finale__line { margin: var(--belmont-padding) auto 0; max-inline-size: var(--belmont-measure); font-style: italic; color: var(--belmont-ink-soft); font-size: var(--belmont-step-1); line-height: var(--belmont-lh-step-1); }
+  .belmont-finale__actions { display: flex; justify-content: center; gap: var(--belmont-padding); margin-block-start: var(--belmont-gutter); }
+
+  .belmont-footer {
+    padding-block: var(--belmont-gutter);
+    border-block-start: var(--belmont-border) solid var(--belmont-line-soft);
+    color: var(--belmont-ink-mute);
+    font-size: var(--semantic-font-size-body-sm);
+  }
+  .belmont-footer p { margin: 0 0 var(--belmont-inner); max-inline-size: var(--belmont-measure); }
+  .belmont-footer__credit { font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); line-height: var(--belmont-leading); color: var(--belmont-ink-soft); }
+
+  /* SplitText */
+  .belmont-char, .belmont-word { display: inline-block; }
+
+  @keyframes belmont-blink { 50% { opacity: 0; } }
+  @keyframes belmont-flicker { 0% { opacity: 1; } 40% { opacity: 0.7; } 70% { opacity: 0.95; } 100% { opacity: 0.55; } }
+
+  /* Movimiento reducido: sin parpadeos ni llamas; GSAP decide por mov.reducido */
+  @media (prefers-reduced-motion: reduce) {
+    .belmont-intro__start, .belmont-hero__window { animation: none; }
+  }
+  .is-reduced .belmont-intro__start, .is-reduced .belmont-hero__window { animation: none; }
+}
+
+@layer syx.app {
+  /* ── Capa 3D y atmósfera ─────────────────────────────────── */
+  /* syx-reuse: checked mol-card, layout-* — lienzo WebGL fijo, no es un componente */
+  .belmont-gl {
+    /* syx-allow R03: lienzo fijo detrás del contenido */
+    position: fixed;
+    inset: 0;
+    z-index: var(--belmont-z-sky);
+    inline-size: 100%;
+    block-size: 100%;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .is-3d .belmont-gl { opacity: 1; }
+  .belmont-page > main, .belmont-page > footer { position: relative; z-index: var(--belmont-z-scene); }
+  .belmont-section, .belmont-stages, .belmont-footer { position: relative; background: var(--belmont-bg); }
+  .is-3d .belmont-hero { background: none; }
+  .is-3d .belmont-hero__sky, .is-3d .belmont-hero__moon, .is-3d [data-layer] { display: none; }
+  .is-3d .belmont-hero__fog { background: linear-gradient(to top, var(--belmont-bg), color-mix(in oklch, var(--belmont-bg) 0%, transparent)); }
+  .is-3d .belmont-finale__pin { background: none; }
+  .is-3d .belmont-finale__tower { display: none; }
+
+  .belmont-hero__drip {
+    /* syx-allow R03: borde de sangre anclado al pie del hero */
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: calc(var(--belmont-drip-h) * -1 + var(--belmont-border));
+    z-index: var(--belmont-z-text);
+    inline-size: 100%;
+    block-size: var(--belmont-drip-h);
+    overflow: visible;
+    transform-origin: top;
+    pointer-events: none;
+  }
+  /* Las flechas ← → no están en el subset latino de EB Garamond: tipografía del sistema con glifos de flecha */
+  .belmont-keys { font-family: system-ui, "Segoe UI Symbol", "Apple Symbols", sans-serif; letter-spacing: .08em; white-space: nowrap; }
+  .belmont-hero { overflow-x: clip; overflow-y: visible; z-index: var(--belmont-z-text); } /* el numeral sangra a lo ancho; la sangre cae por debajo y pisa el prólogo */
+
+  /* grano de película y viñeta, sobre todo y sin capturar el puntero */
+  .belmont-page::before,
+  .belmont-page::after {
+    content: "";
+    /* syx-allow R03: velos de atmósfera a pantalla completa */
+    position: fixed;
+    inset: 0;
+    z-index: var(--belmont-z-hud);
+    pointer-events: none;
+  }
+  .belmont-page::before {
+    background: radial-gradient(120% 90% at 50% 45%, transparent 42%, color-mix(in oklch, var(--belmont-bg-deep) 94%, transparent)); /* viñeta más cerrada: los bordes se pierden en negro */
+  }
+  .belmont-page::after {
+    opacity: var(--belmont-grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  /* linterna: una luz de vela sigue al puntero (solo puntero fino y sin movimiento reducido) */
+  .belmont-lantern {
+    /* syx-allow R03: luz que sigue al puntero */
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    z-index: var(--belmont-z-hud);
+    inline-size: var(--belmont-lantern-size);
+    aspect-ratio: 1;
+    margin: calc(var(--belmont-lantern-size) / -2) 0 0 calc(var(--belmont-lantern-size) / -2);
+    background: radial-gradient(closest-side, color-mix(in oklch, var(--belmont-wax) 14%, transparent), transparent);
+    mix-blend-mode: soft-light;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* marco gótico de tarjetas: doble filete interior */
+
+  /* separador ornamental entre secciones */
+  .belmont-section + .belmont-section::before,
+  .belmont-stages + .belmont-section::before {
+    content: "✠";
+    /* syx-allow R03: ornamento centrado en la junta de secciones */
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    display: block;
+    text-align: center;
+    transform: translateY(-50%);
+    color: var(--belmont-blood);
+    font-size: var(--belmont-step-1);
+    line-height: 1;
+    background: linear-gradient(to right, transparent, var(--belmont-line) 30% 46%, transparent 46% 54%, var(--belmont-line) 54% 70%, transparent) center / 100% var(--belmont-border) no-repeat;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   4 · Escenas jugables: tokens de profundidad y piezas nuevas
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --belmont-depth-perspective: 60rem;
+  --belmont-vitral-w: clamp(4rem, 2rem + 8vw, 11rem);
+  --belmont-column-w: clamp(3rem, 2rem + 4vw, 7rem);
+  --belmont-drape-w: clamp(5rem, 2rem + 14vw, 18rem);
+  --belmont-chandelier-w: clamp(16rem, 8rem + 30vw, 34rem);
+  --belmont-candle: 2.75rem;               /* objetivo táctil ≥ 44 px (C7) */
+  --belmont-drop: 2rem;
+  --belmont-forest-w: 400vw;
+  --belmont-forest-card: min(82vw, 26rem);
+  --belmont-clock-face: clamp(16rem, 10rem + 26vw, 40rem);
+  --belmont-step-w: clamp(5rem, 3rem + 8vw, 12rem);
+  --belmont-wall-brick: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
+  --belmont-pendulum-h: 46svh;
+  --belmont-blur-far: 3px;
+  --belmont-blur-mid: 1px;
+}
+
+@layer syx.app {
+  /* syx-reuse-file: escenas propias (pistas, capas de profundidad, péndulos); SYX no tiene piezas escénicas */
+
+  /* ── Látigo apuntable ────────────────────────────────────── */
+  .belmont-rose { cursor: crosshair; outline-offset: var(--belmont-inner); }
+  .belmont-rose:focus-visible { outline: var(--belmont-border-thick) solid var(--semantic-focus-ring-color); }
+  .belmont-rose__ray.is-hit { stroke: var(--belmont-blood-text); }
+  .belmont-rose__aim { color: var(--belmont-blood-text); }
+  .belmont-rose__aim path { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+  .belmont-rose__aim circle { fill: var(--belmont-wax); }
+  .belmont-rose__crack circle { fill: none; stroke: var(--belmont-wax); stroke-width: 1.5; }
+  .belmont-rose__crack line { stroke: color-mix(in oklch, var(--belmont-wax) 70%, white); stroke-width: 1.4; stroke-linecap: round; } /* el restallido de la punta */
+  .belmont-rose__readout {
+    margin: var(--belmont-padding) 0 0;
+    text-align: center;
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    color: var(--belmont-wax-text);
+  }
+
+  /* ── Candelabro ──────────────────────────────────────────── */
+  .belmont-chandelier-sec { position: relative; background: var(--belmont-bg-deep); }
+  .belmont-chandelier-sec__pin {
+    position: relative;
+    min-block-size: 100svh;
+    overflow: clip;
+    perspective: var(--belmont-depth-perspective);
+    background: radial-gradient(70% 55% at 50% 25%, color-mix(in oklch, var(--belmont-wax) 10%, var(--belmont-bg)), var(--belmont-bg-deep) 75%);
+  }
+  .belmont-depth {
+    /* syx-allow R03: planos de profundidad de la escena */
+    position: absolute;
+    inset: -10% 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    pointer-events: none;
+  }
+  .belmont-depth--far { filter: blur(var(--belmont-blur-far)); opacity: 0.7; }
+  .belmont-depth--mid { filter: blur(var(--belmont-blur-mid)); align-items: stretch; }
+  .belmont-depth--near { justify-content: space-between; align-items: stretch; z-index: var(--belmont-z-text); }
+  .belmont-vitral {
+    inline-size: var(--belmont-vitral-w);
+    aspect-ratio: 1 / 2.6;
+    clip-path: var(--belmont-arch);
+    background:
+      repeating-linear-gradient(90deg, transparent 0 30%, var(--belmont-bg-deep) 30% 34%),
+      repeating-linear-gradient(0deg, transparent 0 22%, var(--belmont-bg-deep) 22% 25%),
+      linear-gradient(to bottom, var(--belmont-blood), var(--belmont-violet) 55%, var(--belmont-moon));
+  }
+  .belmont-column {
+    inline-size: var(--belmont-column-w);
+    background: linear-gradient(to right, var(--belmont-bg-deep), var(--belmont-surface-2) 40%, var(--belmont-surface) 60%, var(--belmont-bg-deep));
+  }
+  .belmont-drape {
+    inline-size: var(--belmont-drape-w);
+    background:
+      repeating-linear-gradient(90deg, var(--belmont-blood-deep) 0 12%, color-mix(in oklch, var(--belmont-blood-deep) 50%, var(--belmont-bg-deep)) 12% 24%);
+    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent);
+    mask-image: linear-gradient(to bottom, black 70%, transparent);
+  }
+  .belmont-chandelier {
+    /* syx-allow R03: lámpara colgada del techo de la escena */
+    position: absolute;
+    inset-block-start: -2%;
+    inset-inline-start: 50%;
+    z-index: var(--belmont-z-scene);
+    inline-size: var(--belmont-chandelier-w);
+    margin-inline-start: calc(var(--belmont-chandelier-w) / -2);
+    aspect-ratio: 400 / 520;
+    color: var(--belmont-wax);
+    transform-origin: 50% 0;
+  }
+  .belmont-chandelier-sec__3d { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; pointer-events: none; } /* syx-allow R03: el salón en 3D, al fondo */
+  .is-3d > .belmont-depth, .is-3d > .belmont-beams { visibility: hidden; } /* con el salón en 3D, los planos dibujados se apagan */
+  .belmont-chandelier__3d { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; filter: drop-shadow(0 0 var(--belmont-padding) color-mix(in oklch, var(--belmont-wax) 22%, transparent)); } /* syx-allow R03: lienzo de la lámpara 3D */
+  .belmont-chandelier.is-3d .belmont-chandelier__svg { visibility: hidden; }
+  .belmont-chandelier__svg { inline-size: 100%; block-size: 100%; filter: drop-shadow(0 0 var(--belmont-padding) color-mix(in oklch, var(--belmont-wax) 40%, transparent)); }
+  .belmont-candle {
+    /* syx-allow R03: vela sobre el brazo de la lámpara */
+    position: absolute;
+    inset-inline-start: var(--belmont-x);
+    inset-block-start: var(--belmont-y);
+    inline-size: var(--belmont-candle);
+    block-size: var(--belmont-candle);
+    margin: calc(var(--belmont-candle) * -1) 0 0 calc(var(--belmont-candle) / -2);
+    border: 0;
+    background: radial-gradient(circle at 50% 35%, var(--belmont-wax) 0 18%, color-mix(in oklch, var(--belmont-wax) 30%, transparent) 30%, transparent 62%);
+    color: var(--belmont-ink);
+    font-size: var(--semantic-font-size-caption);
+    cursor: pointer;
+    animation: belmont-flicker var(--belmont-flicker) ease-in-out infinite alternate;
+  }
+  .belmont-candle:focus-visible { outline: var(--belmont-border-thick) solid var(--semantic-focus-ring-color); }
+  .belmont-candle.is-broken { background: none; color: var(--belmont-ink-mute); animation: none; cursor: default; }
+  /* el latigazo que rompe las velas: cuero trenzado y el chasquido en la punta */
+  .belmont-whipfx { position: fixed; inset: 0; inline-size: 100vw; block-size: 100vh; z-index: calc(var(--belmont-z-hud) - 1); pointer-events: none; overflow: visible; visibility: hidden; } /* syx-allow R03: capa del latigazo */
+  .belmont-whipfx__cuero { fill: none; stroke: color-mix(in oklch, var(--belmont-wax) 45%, var(--belmont-blood-deep)); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 0.04 0.012; filter: drop-shadow(0 0 3px color-mix(in oklch, var(--belmont-wax) 60%, transparent)); }
+  .belmont-whipfx__chasquido { fill: none; stroke: var(--belmont-wax-text); stroke-width: 3; }
+  .belmont-drops { position: absolute; inset: 0; z-index: var(--belmont-z-scene); pointer-events: none; }
+  .belmont-drop {
+    /* syx-allow R03: objeto que cae desde la vela */
+    position: absolute;
+    inline-size: var(--belmont-drop);
+    block-size: var(--belmont-drop);
+    display: grid;
+    place-items: center;
+    color: var(--belmont-blood-text);
+    font-size: var(--belmont-step-1);
+    line-height: 1;
+  }
+  .belmont-chandelier-sec__copy { position: relative; z-index: var(--belmont-z-text); min-block-size: 100svh; align-content: end; padding-block: var(--belmont-section) var(--belmont-gutter); pointer-events: none; }
+  .belmont-chandelier-sec__card {
+    padding: var(--belmont-gutter);
+    background: color-mix(in oklch, var(--belmont-bg-deep) 80%, transparent);
+    border-block-start: var(--belmont-border-thick) solid var(--belmont-blood);
+    pointer-events: auto;
+  }
+  .belmont-chandelier-sec__count { margin: var(--belmont-padding) 0 0; font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); line-height: var(--belmont-leading); color: var(--belmont-wax-text); }
+  @media (min-width: 64em) { .belmont-chandelier-sec__card { grid-column: d3-0 / d4-2; } }
+
+  /* ── Bosque lateral ──────────────────────────────────────── */
+  .belmont-forest { position: relative; background: var(--belmont-bg-deep); }
+  .belmont-forest__pin {
+    position: relative;
+    block-size: 100svh;
+    overflow: clip;
+    background: linear-gradient(to bottom, var(--belmont-bg-deep), color-mix(in oklch, var(--belmont-violet) 35%, var(--belmont-bg)) 60%, var(--belmont-bg-deep));
+  }
+  .belmont-forest__3d { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; pointer-events: none; } /* syx-allow R03: el bosque en 3D, detrás de la pista */
+  /* con el bosque en 3D, los planos dibujados se apagan; los ojos y las luciérnagas siguen siendo HTML */
+  .is-3d > .belmont-forest__layer .belmont-forest__svg, .is-3d > .belmont-forest__moon, .is-3d > .belmont-forest__river, .is-3d > .belmont-forest__fog { visibility: hidden; }
+  .belmont-forest__polvo { position: absolute; inset-block-start: 0; inset-inline-start: 0; z-index: 3; pointer-events: none; } /* syx-allow R03: polvo al despegar y al caer, colocado desde el salto */
+  .belmont-forest__polvo i { position: absolute; inset-block-start: -0.5rem; inset-inline-start: -0.9rem; inline-size: 1.8rem; block-size: 1rem; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in oklch, var(--belmont-ink-soft) 55%, transparent), transparent); } /* syx-allow R03 */
+  .belmont-forest__sound {
+    /* syx-allow R03: interruptor del trueno, en la esquina del bosque */
+    position: absolute;
+    inset-block-start: calc(var(--belmont-hud-h) + var(--belmont-inner));
+    inset-inline-end: var(--belmont-borde);
+    z-index: var(--belmont-z-text);
+    padding: var(--belmont-micro) var(--belmont-inner);
+    border: var(--belmont-border) solid var(--belmont-line);
+    background: color-mix(in oklch, var(--belmont-bg-deep) 70%, transparent);
+    color: var(--belmont-ink-soft);
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    cursor: pointer;
+  }
+  .belmont-forest__sound[aria-pressed="true"] { color: var(--belmont-wax-text); border-color: var(--belmont-wax); }
+  .belmont-forest__sound:focus-visible { outline: var(--belmont-border-thick) solid var(--semantic-focus-ring-color); outline-offset: 2px; }
+  .belmont-forest__layer {
+    /* syx-allow R03: planos del bosque */
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    inline-size: var(--belmont-forest-w);
+    block-size: 75%;
+    pointer-events: none;
+  }
+  .belmont-forest__svg { inline-size: 100%; block-size: 100%; }
+  .belmont-forest__layer--sky { color: color-mix(in oklch, var(--belmont-violet) 45%, var(--belmont-bg)); block-size: 60%; inset-block-end: 22%; }
+  .belmont-forest__layer--far { color: color-mix(in oklch, var(--belmont-violet) 25%, var(--belmont-bg)); filter: blur(var(--belmont-blur-mid)); block-size: 62%; inset-block-end: 14%; }
+  .belmont-forest__layer--mid { color: var(--belmont-surface); block-size: 72%; inset-block-end: 8%; }
+  .belmont-forest__layer--near { color: var(--belmont-bg-deep); block-size: 110%; inset-block-end: -6%; z-index: calc(var(--belmont-z-scene) - 1); } /* delante del bosque pero detrás de las tarjetas: no tapa lo que se lee */
+  .belmont-forest__river {
+    /* syx-allow R03: franja de agua del bosque */
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-end: 0;
+    inline-size: var(--belmont-forest-w);
+    block-size: 14%;
+    background:
+      repeating-linear-gradient(100deg, transparent 0 2%, color-mix(in oklch, var(--belmont-moon) 22%, transparent) 2% 2.3%),
+      linear-gradient(to bottom, color-mix(in oklch, var(--belmont-violet) 40%, var(--belmont-bg-deep)), var(--belmont-bg-deep));
+  }
+  .belmont-forest__track {
+    /* syx-allow R03: pista de tarjetas sobre el bosque */
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: var(--belmont-z-scene);
+    display: flex;
+    align-items: center;
+    gap: max(calc(var(--belmont-forest-card) * 0.5), calc(62vw - var(--belmont-forest-card))); /* en pantallas anchas cada prueba ocupa su propio tramo: se ve pasar el bosque */
+    padding-inline: max(var(--belmont-margin), calc(50vw - var(--belmont-forest-card) * 0.5)) calc(50vw - var(--belmont-forest-card) * 0.5); /* la última prueba también llega al centro */
+    inline-size: max-content;
+  }
+  .belmont-forest__card {
+    flex: none;
+    inline-size: var(--belmont-forest-card);
+    padding: var(--belmont-gutter);
+    background: color-mix(in oklch, var(--belmont-bg-deep) 82%, transparent);
+    border-inline-start: var(--belmont-border-thick) solid var(--belmont-blood);
+    backdrop-filter: blur(4px);
+  }
+  .belmont-forest__card p { margin: var(--belmont-inner) 0 0; color: var(--belmont-ink-soft); }
+  .belmont-forest__num { font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); color: var(--belmont-blood-text); }
+  /* las pruebas del bosque: cada tarjeta es la mecánica que cuenta */
+  .belmont-forest__game {
+    /* syx-allow R03: escenario de la prueba; el cazador y los troncos se colocan dentro */
+    position: relative;
+    block-size: clamp(8rem, 5rem + 9svh, 11rem);
+    margin-block: var(--belmont-padding);
+    overflow: clip;
+    background: linear-gradient(to bottom, transparent 40%, color-mix(in oklch, var(--belmont-violet) 18%, transparent));
+    border-block-end: var(--belmont-border) solid var(--belmont-line-soft);
+  }
+  .belmont-forest__game > * { position: absolute; } /* syx-allow R03: piezas del escenario */
+  .belmont-forest__hero {
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    z-index: 2;
+    inline-size: 2.1rem;
+    block-size: 3.3rem;
+    pointer-events: none;
+  }
+  .belmont-forest__volador { position: absolute; inset-block-start: 0; inset-inline-start: 0; z-index: var(--belmont-z-text); inline-size: 2.1rem; block-size: 3.3rem; visibility: hidden; pointer-events: none; } /* syx-allow R03: el cazador en pleno salto entre tarjetas */
+  .belmont-forest__herosvg { display: block; inline-size: 100%; block-size: 100%; fill: color-mix(in oklch, var(--belmont-blood-deep) 60%, var(--belmont-bg-deep)); }
+  .is-icons3d .belmont-forest__herosvg { visibility: hidden; }
+  /* 2-1 · el río */
+  .belmont-forest__water { inset: 64% 0 0; background: linear-gradient(to bottom, color-mix(in oklch, var(--belmont-moon) 35%, var(--belmont-bg-deep)), var(--belmont-bg-deep)); opacity: 0.8; }
+  .belmont-forest__bank { inset-block: 62% 0; inset-inline-start: 0; inline-size: 14%; background: var(--belmont-surface-2); }
+  .belmont-forest__bank--far { inset-inline: auto 0; inline-size: 10%; }
+  .belmont-forest__plank { inset-block-start: 62%; inline-size: 13%; margin-inline-start: -6.5%; block-size: 0.6rem; background: repeating-linear-gradient(90deg, color-mix(in oklch, var(--belmont-wax) 35%, var(--belmont-surface-2)) 0 22%, var(--belmont-surface-2) 22% 26%); border-radius: 0.3rem; transition: box-shadow 0.2s; }
+  .belmont-forest__plank:nth-of-type(3) { inset-inline-start: 27%; }
+  .belmont-forest__plank:nth-of-type(4) { inset-inline-start: 45%; }
+  .belmont-forest__plank:nth-of-type(5) { inset-inline-start: 63%; }
+  .belmont-forest__plank:nth-of-type(6) { inset-inline-start: 81%; }
+  .belmont-forest__plank.is-up { box-shadow: 0 0 0.6rem color-mix(in oklch, var(--belmont-wax) 60%, transparent); }
+  /* 2-2 · troncos colgantes */
+  .belmont-forest__ledge { inset-block: 72% 0; inset-inline-start: 0; inline-size: 20%; background: var(--belmont-surface-2); border-block-start: var(--belmont-border-thick) solid color-mix(in oklch, var(--belmont-wax) 30%, var(--belmont-surface-2)); }
+  .belmont-forest__ledge--far { inset-inline: auto 0; }
+  .belmont-forest__game--anilla .belmont-forest__ledge { inline-size: 36%; }
+  .belmont-forest__game--anilla .belmont-forest__ledge--far { inline-size: 20%; }
+  .belmont-forest__pendulum { inset-block-start: 4%; inset-inline-start: 50%; inline-size: 2px; block-size: 62%; margin-inline-start: -1px; transform-origin: 50% 0; }
+  .belmont-forest__rope { position: absolute; inset: 0; background: color-mix(in oklch, var(--belmont-ink) 45%, transparent); } /* syx-allow R03 */
+  .belmont-forest__trunk { position: absolute; inset-block-start: 100%; inset-inline-start: -2.25rem; inline-size: 4.5rem; block-size: 0.65rem; border-radius: 0.3rem; background: repeating-linear-gradient(90deg, color-mix(in oklch, var(--belmont-wax) 35%, var(--belmont-surface-2)) 0 22%, var(--belmont-surface-2) 22% 26%); } /* syx-allow R03 */
+  /* 2-3 · la anilla */
+  .belmont-forest__hook { inset-block-start: 0; inset-inline-start: 0; inline-size: 1.4rem; aspect-ratio: 1; margin: -0.7rem 0 0 -0.7rem; border: var(--belmont-border-thick) solid var(--belmont-wax); border-radius: var(--semantic-border-radius-circle); transition: box-shadow 0.2s; }
+  .is-reach .belmont-forest__hook, .is-lashed .belmont-forest__hook { box-shadow: 0 0 var(--belmont-padding) var(--belmont-wax); }
+  .belmont-forest__lash { inset: 0; inline-size: 100%; block-size: 100%; overflow: visible; pointer-events: none; }
+  .belmont-forest__lash line { stroke: color-mix(in oklch, var(--belmont-wax) 70%, var(--belmont-ink)); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .belmont-forest__more { margin: var(--belmont-padding) 0 0; color: var(--belmont-ink-soft); font-style: italic; }
+  .belmont-trial--forest { margin-block-start: var(--belmont-inner); }
+  /* mientras se juega, el plano cercano se aparta para no tapar la prueba */
+  .belmont-forest__layer--near { transition: opacity var(--belmont-dur-slow) var(--belmont-ease); }
+  .is-trial .belmont-forest__layer--near { opacity: 0.3; }
+
+  /* ── Torre del reloj ─────────────────────────────────────── */
+  .belmont-clock { position: relative; background: var(--belmont-bg-deep); }
+  .belmont-clock__pin { position: relative; block-size: 100svh; overflow: clip; background: radial-gradient(60% 60% at 50% 40%, color-mix(in oklch, var(--belmont-wax) 8%, var(--belmont-bg)), var(--belmont-bg-deep)); }
+  .belmont-clock__layer { position: absolute; inset: 0; pointer-events: none; }
+  .belmont-clock__3d { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; pointer-events: none; } /* syx-allow R03: la torre en 3D, detrás de las plataformas y del texto */
+  /* con la torre en 3D, las piezas HTML siguen ahí (las anima el scroll y las lee el lienzo) pero no se pintan */
+  .is-3d .belmont-clock__layer--far .belmont-clock__svg, .is-3d .belmont-clock__layer--mid .belmont-clock__svg { visibility: hidden; }
+  .is-3d .belmont-clock__face { background: none; border-color: transparent; box-shadow: none; }
+  .is-3d .belmont-clock__face > *, .is-3d .belmont-clock__pendulum, .is-3d .belmont-clock__pendulum span { visibility: hidden; }
+  .is-3d .belmont-clock__steps span { background: none; box-shadow: none; }
+  .belmont-clock__layer--far { color: color-mix(in oklch, var(--belmont-wax) 18%, var(--belmont-bg)); filter: blur(var(--belmont-blur-far)); }
+  .belmont-clock__layer--mid { color: color-mix(in oklch, var(--belmont-wax) 35%, var(--belmont-surface)); filter: blur(var(--belmont-blur-mid)); }
+  .belmont-clock__layer--near { color: var(--belmont-surface-2); z-index: var(--belmont-z-text); }
+  .belmont-clock__gear {
+    /* syx-allow R03: engranaje colocado en su plano */
+    position: absolute;
+    inset-inline-start: var(--belmont-x);
+    inset-block-start: var(--belmont-y);
+    inline-size: var(--belmont-s);
+    aspect-ratio: 1;
+    margin: calc(var(--belmont-s) / -2) 0 0 calc(var(--belmont-s) / -2);
+  }
+  .belmont-clock__svg { inline-size: 100%; block-size: 100%; }
+  .belmont-clock__face {
+    /* syx-allow R03: esfera del reloj en el centro */
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    inline-size: var(--belmont-clock-face);
+    aspect-ratio: 1;
+    margin: calc(var(--belmont-clock-face) / -2) 0 0 calc(var(--belmont-clock-face) / -2);
+    border-radius: var(--semantic-border-radius-circle);
+    border: var(--belmont-border-thick) solid var(--belmont-wax);
+    background:
+      radial-gradient(circle, var(--belmont-surface) 0 62%, transparent 62.5%),
+      repeating-conic-gradient(from -1.5deg, var(--belmont-wax) 0 3deg, transparent 3deg 30deg),
+      var(--belmont-bg-deep);
+    box-shadow: 0 0 var(--belmont-section) color-mix(in oklch, var(--belmont-wax) 20%, transparent);
+  }
+  .belmont-clock__hand {
+    /* syx-allow R03: aguja anclada al centro de la esfera */
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-end: 50%;
+    inline-size: var(--belmont-border-thick);
+    margin-inline-start: calc(var(--belmont-border-thick) / -2);
+    background: var(--belmont-ink);
+    transform-origin: bottom center;
+  }
+  .belmont-clock__hand--h { block-size: 24%; inline-size: calc(var(--belmont-border-thick) * 2.5); }
+  .belmont-clock__hand--m { block-size: 38%; background: var(--belmont-blood-text); }
+  .belmont-clock__pendulum {
+    /* syx-allow R03: péndulo bajo la esfera */
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    inline-size: var(--belmont-border-thick);
+    block-size: var(--belmont-pendulum-h);
+    background: var(--belmont-line-strong);
+    transform-origin: top;
+  }
+  .belmont-clock__pendulum span { position: absolute; inset-block-end: -1.5rem; inset-inline-start: -1.5rem; inline-size: 3rem; aspect-ratio: 1; border-radius: var(--semantic-border-radius-circle); background: var(--belmont-wax); box-shadow: 0 0 var(--belmont-gutter) var(--belmont-wax); }
+  .belmont-clock__steps { position: absolute; inset: 0; z-index: var(--belmont-z-scene); pointer-events: none; }
+  .belmont-clock__steps span {
+    /* syx-allow R03: plataformas de la torre */
+    position: absolute;
+    inline-size: var(--belmont-step-w);
+    block-size: var(--belmont-padding);
+    background: linear-gradient(to bottom, var(--belmont-wax), var(--belmont-surface-2));
+    box-shadow: 0 var(--belmont-padding) var(--belmont-gutter) var(--belmont-bg-deep);
+  }
+  .belmont-clock__copy { position: relative; z-index: var(--belmont-z-text); block-size: 100%; align-content: start; padding-block: calc(var(--belmont-hud-h) + var(--belmont-gutter)); pointer-events: none; }
+  .belmont-clock__card { padding: var(--belmont-gutter); background: color-mix(in oklch, var(--belmont-bg-deep) 80%, transparent); border-block-start: var(--belmont-border-thick) solid var(--belmont-wax); }
+  .belmont-clock__alt { margin: var(--belmont-padding) 0 0; font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size-lg); color: var(--belmont-wax-text); }
+  .belmont-clock__card { pointer-events: auto; }
+  .belmont-clock__card--trial { border-block-start-color: var(--belmont-blood); }
+  .belmont-clock__card--trial .belmont-trial { margin-block-start: 0; }
+  @media (min-width: 64em) {
+    .belmont-clock__copy { grid-template-rows: 1fr; }
+    .belmont-clock__card { grid-column: d3-2 / content-end; grid-row: 1; align-self: start; }
+    .belmont-clock__card--trial { grid-column: content-start / d3-1; align-self: end; }
+  }
+
+  /* ── Muro secreto y diálogo ──────────────────────────────── */
+  .belmont-secret { row-gap: var(--belmont-gutter); align-items: center; }
+  .belmont-secret__hint { margin: var(--belmont-padding) 0 0; font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); line-height: var(--belmont-leading); color: var(--belmont-wax-text); }
+  .belmont-secret__wallbox { position: relative; display: grid; }
+  .belmont-wall {
+    grid-area: 1 / 1;
+    display: grid;
+    grid-template-columns: repeat(6, var(--belmont-wall-brick));
+    grid-auto-rows: calc(var(--belmont-wall-brick) * 0.55);
+    gap: var(--belmont-micro);
+    justify-content: center;
+    padding: var(--belmont-padding);
+    border: 0;
+    background: var(--belmont-bg-deep);
+    cursor: crosshair;
+  }
+  .belmont-wall:focus-visible { outline: var(--belmont-border-thick) solid var(--semantic-focus-ring-color); }
+  .belmont-wall__brick {
+    background: linear-gradient(calc(var(--belmont-r) * 20deg + 160deg), var(--belmont-surface-2), var(--belmont-surface));
+    border: var(--belmont-border) solid var(--belmont-line);
+  }
+  .belmont-wall.is-cracked .belmont-wall__brick:nth-child(7n + 3) { background: linear-gradient(135deg, var(--belmont-surface-2) 48%, var(--belmont-bg-deep) 49% 51%, var(--belmont-surface-2) 52%); }
+  .belmont-secret__prize {
+    grid-area: 1 / 1;
+    align-self: center;
+    justify-self: center;
+    display: grid;
+    justify-items: center;
+    gap: var(--belmont-padding);
+    max-inline-size: 24rem;
+    padding: var(--belmont-gutter);
+    text-align: center;
+    color: var(--belmont-wax);
+  }
+  .belmont-secret__prize[hidden] { display: none; }
+  .belmont-secret__prize svg { inline-size: var(--belmont-icon-lg); block-size: var(--belmont-icon-lg); }
+  .belmont-secret__prize p { margin: 0; color: var(--belmont-ink-soft); }
+  @media (min-width: 64em) {
+    .belmont-secret__text { grid-column: d3-0 / d4-2; }
+    .belmont-secret__wallbox { grid-column: d4-2 / d3-3; }
+  }
+  .belmont-dialog {
+    max-inline-size: min(92vw, 36rem);
+    padding: var(--belmont-section) var(--belmont-gutter) var(--belmont-gutter);
+    border: var(--belmont-border) solid var(--belmont-wax);
+    background: var(--belmont-bg-deep);
+    color: var(--belmont-ink);
+    clip-path: var(--belmont-arch);
+  }
+  .belmont-dialog::backdrop { background: color-mix(in oklch, var(--belmont-bg-deep) 85%, transparent); }
+  .belmont-dialog [hidden] { display: none; }
+
+  /* ── Aviso flotante y modo sangre (código de Konami) ─────── */
+  .belmont-toast {
+    /* syx-allow R03: aviso fijo sobre el HUD */
+    position: fixed;
+    inset-block-start: calc(var(--belmont-hud-h) + var(--belmont-inner));
+    inset-inline-start: 50%;
+    z-index: var(--belmont-z-hud);
+    margin: 0;
+    padding: var(--belmont-inner) var(--belmont-padding);
+    background: var(--belmont-blood);
+    color: var(--semantic-color-on-primary);
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    line-height: var(--belmont-leading);
+    transform: translate(-50%, -200%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .is-blood .belmont-title__main, .is-blood .belmont-h2 em { color: var(--belmont-blood-text); }
+  .is-blood .belmont-page::before { background: radial-gradient(120% 90% at 50% 45%, transparent 40%, color-mix(in oklch, var(--belmont-blood-deep) 70%, transparent)); }
+}
+
+:root.is-blood {
+  --semantic-color-secondary: oklch(0.6 0.2 25);
+  --semantic-color-secondary-text: oklch(0.7 0.18 27);
+  --semantic-color-tertiary: oklch(0.6 0.2 25);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   5 · Acabados: metal, llamas, haces de luz, niebla y luciérnagas
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --belmont-flame-w: 1.15rem;
+  --belmont-flame-h: 2.1rem;
+  --belmont-wax-h: 1.6rem;
+  --belmont-beam-w: clamp(5rem, 3rem + 8vw, 14rem);
+  --belmont-forest-moon: clamp(6rem, 4rem + 8vw, 14rem);
+  --belmont-fly: 0.35rem;
+  --belmont-flame-dur: 0.18s;
+}
+@layer syx.app {
+  .belmont-defs { position: absolute; inline-size: 0; block-size: 0; overflow: hidden; } /* syx-allow R03: definiciones SVG sin caja */
+  .belmont-defs__oro-1 { stop-color: var(--belmont-wax); }
+  .belmont-defs__oro-2 { stop-color: color-mix(in oklch, var(--belmont-wax) 60%, var(--belmont-ink)); }
+  .belmont-defs__oro-3 { stop-color: color-mix(in oklch, var(--belmont-wax) 55%, var(--belmont-bg-deep)); }
+  .belmont-defs__oro-4 { stop-color: color-mix(in oklch, var(--belmont-wax) 70%, var(--belmont-blood-deep)); }
+  .belmont-defs__hierro-1 { stop-color: color-mix(in oklch, var(--belmont-wax) 45%, var(--belmont-surface-2)); }
+  .belmont-defs__hierro-2 { stop-color: var(--belmont-surface-2); }
+  .belmont-defs__hierro-3 { stop-color: var(--belmont-bg-deep); }
+  .belmont-chandelier__gem { fill: var(--belmont-blood); }
+
+  /* velas con llama de verdad: lágrima en degradado que tiembla */
+  .belmont-candle { background: none; }
+  .belmont-candle__wax {
+    /* syx-allow R03: cirio bajo la llama */
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-end: calc(var(--belmont-wax-h) * -0.35);
+    inline-size: calc(var(--belmont-flame-w) * 0.7);
+    block-size: var(--belmont-wax-h);
+    margin-inline-start: calc(var(--belmont-flame-w) * -0.35);
+    background: linear-gradient(to right, color-mix(in oklch, var(--belmont-ink) 70%, var(--belmont-wax)), var(--belmont-ink) 40%, color-mix(in oklch, var(--belmont-ink) 55%, var(--belmont-bg)));
+  }
+  .belmont-candle__flame {
+    /* syx-allow R03: llama sobre el cirio */
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-end: calc(var(--belmont-wax-h) * 0.62);
+    inline-size: var(--belmont-flame-w);
+    block-size: var(--belmont-flame-h);
+    margin-inline-start: calc(var(--belmont-flame-w) / -2);
+    border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%;
+    background: radial-gradient(60% 70% at 50% 75%, var(--belmont-ink) 0 18%, var(--belmont-wax) 40%, color-mix(in oklch, var(--belmont-blood) 70%, var(--belmont-wax)) 70%, transparent 72%);
+    box-shadow: 0 0 var(--belmont-gutter) color-mix(in oklch, var(--belmont-wax) 70%, transparent), 0 0 calc(var(--belmont-gutter) * 3) color-mix(in oklch, var(--belmont-wax) 35%, transparent);
+    transform-origin: 50% 90%;
+    animation: belmont-llama var(--belmont-flame-dur) ease-in-out infinite alternate;
+  }
+  .belmont-candle.is-broken .belmont-candle__flame { opacity: 0; animation: none; }
+  .belmont-candle.is-broken .belmont-candle__wax { block-size: calc(var(--belmont-wax-h) * 0.4); }
+  @keyframes belmont-llama { 0% { transform: scale(1, 1) skewX(-3deg); } 100% { transform: scale(0.9, 1.12) skewX(4deg); } }
+
+  /* haces de luz que caen desde los vitrales */
+  .belmont-beams { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; } /* syx-allow R03: capa de luz */
+  .belmont-beams span {
+    /* syx-allow R03: haz inclinado */
+    position: absolute;
+    inset-block-start: -10%;
+    inline-size: var(--belmont-beam-w);
+    block-size: 130%;
+    background: linear-gradient(to bottom, color-mix(in oklch, var(--belmont-violet) 45%, transparent), color-mix(in oklch, var(--belmont-blood) 22%, transparent) 55%, transparent 90%);
+    filter: blur(var(--belmont-padding));
+    transform: rotate(18deg);
+    transform-origin: top;
+    opacity: 0.55;
+  }
+  .belmont-beams span:nth-child(1) { inset-inline-start: 12%; }
+  .belmont-beams span:nth-child(2) { inset-inline-start: 44%; opacity: 0.35; }
+  .belmont-beams span:nth-child(3) { inset-inline-start: 74%; }
+  .belmont-dust { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; pointer-events: none; mix-blend-mode: screen; } /* syx-allow R03: polvo en suspensión */
+
+  /* bosque: luna, bancos de niebla y luciérnagas */
+  .belmont-forest__moon {
+    /* syx-allow R03: luna del bosque */
+    position: absolute;
+    inset-block-start: 10%;
+    inset-inline-start: 62vw;
+    inline-size: var(--belmont-forest-moon);
+    aspect-ratio: 1;
+    border-radius: var(--semantic-border-radius-circle);
+    background: radial-gradient(circle at 40% 40%, var(--belmont-ink), var(--belmont-moon) 55%, color-mix(in oklch, var(--belmont-moon) 50%, var(--belmont-violet)));
+    box-shadow: 0 0 var(--belmont-section) color-mix(in oklch, var(--belmont-moon) 45%, transparent);
+  }
+  .belmont-forest__fog {
+    /* syx-allow R03: banco de niebla */
+    position: absolute;
+    inset-inline-start: 0;
+    inline-size: var(--belmont-forest-w);
+    pointer-events: none;
+    background:
+      radial-gradient(40% 60% at 20% 60%, color-mix(in oklch, var(--belmont-moon) 22%, transparent), transparent 70%),
+      radial-gradient(35% 55% at 55% 50%, color-mix(in oklch, var(--belmont-violet) 35%, transparent), transparent 70%),
+      radial-gradient(40% 60% at 85% 65%, color-mix(in oklch, var(--belmont-moon) 18%, transparent), transparent 70%);
+    background-size: 50% 100%;
+    filter: blur(var(--belmont-inner));
+  }
+  .belmont-forest__fog--far { inset-block-end: 20%; block-size: 30%; opacity: 0.7; }
+  .belmont-forest__fog--mid { inset-block-end: 4%; block-size: 26%; opacity: 0.9; z-index: var(--belmont-z-scene); }
+  .belmont-forest__flies { position: absolute; inset: 0; inline-size: var(--belmont-forest-w); pointer-events: none; z-index: var(--belmont-z-scene); } /* syx-allow R03: capa de luciérnagas */
+  .belmont-fly {
+    /* syx-allow R03: luciérnaga */
+    position: absolute;
+    inline-size: var(--belmont-fly);
+    aspect-ratio: 1;
+    border-radius: var(--semantic-border-radius-circle);
+    background: var(--belmont-wax);
+    box-shadow: 0 0 var(--belmont-padding) var(--belmont-wax), 0 0 var(--belmont-gutter) color-mix(in oklch, var(--belmont-wax) 50%, transparent);
+  }
+
+  /* engranajes: hierro con reflejo dorado; reloj con bisel */
+  .belmont-clock__svg { filter: drop-shadow(0 var(--belmont-inner) var(--belmont-padding) var(--belmont-bg-deep)); }
+  .belmont-clock__face { box-shadow: 0 0 var(--belmont-section) color-mix(in oklch, var(--belmont-wax) 25%, transparent), inset 0 0 var(--belmont-gutter) var(--belmont-bg-deep); }
+
+  @media (prefers-reduced-motion: reduce) { .belmont-candle__flame { animation: none; } }
+  .is-reduced .belmont-candle__flame { animation: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   6 · Iconos 3D: un lienzo fijo que pinta en los huecos
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --belmont-z-icons: calc(var(--semantic-z-index-sticky) - 1);
+  --belmont-prize-3d: 11rem;
+}
+@layer syx.app {
+  .belmont-icons {
+    /* syx-allow R03: lienzo de iconos sobre el contenido, sin capturar el puntero */
+    position: fixed;
+    inset: 0;
+    z-index: var(--belmont-z-icons);
+    inline-size: 100%;
+    block-size: 100%;
+    pointer-events: none;
+  }
+  .belmont-weapon__icon { position: relative; }
+  .belmont-icon3d {
+    /* syx-allow R03: hueco del objeto 3D dentro de su caja */
+    position: absolute;
+    inset: 0;
+    cursor: grab;
+    touch-action: pan-y;
+  }
+  .belmont-icon3d:active { cursor: grabbing; }
+  .belmont-icon3d:focus-visible { outline: var(--belmont-border-thick) solid var(--semantic-focus-ring-color); outline-offset: calc(var(--belmont-inner) * -1); }
+  .belmont-icon3d--prize { position: relative; inset: auto; inline-size: var(--belmont-prize-3d); aspect-ratio: 1; }
+  .is-icons3d .belmont-weapon__icon > svg,
+  .is-icons3d .belmont-secret__prize > svg { display: none; }
+  :not(.is-icons3d) > body .belmont-icon3d--prize { display: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Pruebas jugables: cada mecánica se juega y, al superarla, abre la explicación siguiente
+   ───────────────────────────────────────────────────────────── */
+@layer syx.app {
+  :root {
+    --belmont-trial-gauge-h: 0.75rem;
+    --belmont-trial-zone: 30%;           /* franja buena de la aguja: ±7° de ±24° ≈ 29 % */
+    --belmont-simon-h: clamp(4rem, 3rem + 4vw, 7rem);
+  }
+  .belmont-trial {
+    pointer-events: auto;
+    display: grid;
+    gap: var(--belmont-inner);
+    margin-block: var(--belmont-padding);
+    padding: var(--belmont-padding);
+    border: var(--belmont-border) solid var(--belmont-line);
+    border-inline-start: var(--belmont-border-thick) solid var(--belmont-blood);
+    background: color-mix(in oklch, var(--belmont-bg-deep) 82%, transparent);
+    max-inline-size: var(--belmont-measure);
+  }
+  .belmont-trial__goal { margin: 0; font-size: var(--belmont-body-size-sm, 0.9375rem); line-height: var(--belmont-leading); text-wrap: pretty; }
+  .belmont-trial__tag { font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); text-transform: uppercase; color: var(--belmont-blood-text); margin-inline-end: var(--belmont-micro); }
+  .belmont-trial__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--belmont-inner) var(--belmont-padding); }
+  .belmont-trial__state { margin: 0; flex: 1 1 auto; min-inline-size: 0; overflow-wrap: anywhere; font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); color: var(--belmont-wax-text); }
+  .belmont-trial__act,
+  .belmont-trial__skip {
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    text-transform: uppercase;
+    padding: var(--belmont-inner) var(--belmont-padding);
+    min-block-size: 2.75rem; /* objetivo táctil */
+    border: var(--belmont-border) solid currentColor;
+    background: transparent;
+    color: var(--belmont-ink-soft);
+    cursor: pointer;
+  }
+  .belmont-trial__act { color: var(--belmont-ink); background: var(--belmont-blood-deep); border-color: var(--belmont-blood); }
+  .belmont-trial__act:hover { background: var(--belmont-blood); }
+  .belmont-trial__skip:hover { color: var(--belmont-ink); }
+  .belmont-trial__act:focus-visible,
+  .belmont-trial__skip:focus-visible { outline: var(--belmont-border-thick) solid var(--semantic-focus-ring-color); outline-offset: var(--belmont-micro); }
+  .belmont-trial__bar { block-size: var(--belmont-border-thick); background: var(--belmont-line); overflow: clip; }
+  .belmont-trial__bar span { display: block; block-size: 100%; background: linear-gradient(to right, var(--belmont-blood), var(--belmont-wax)); transform: scaleX(0); transform-origin: left; }
+  .belmont-trial__gauge {
+    position: relative;
+    block-size: var(--belmont-trial-gauge-h);
+    border: var(--belmont-border) solid var(--belmont-line);
+    background: var(--belmont-bg-deep);
+  }
+  .belmont-trial__zone {
+    /* syx-allow R03: franja de acierto centrada en el medidor */
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(50% - var(--belmont-trial-zone) / 2);
+    inline-size: var(--belmont-trial-zone);
+    background: color-mix(in oklch, var(--belmont-wax) 45%, transparent);
+  }
+  .belmont-trial__needle {
+    /* syx-allow R03: aguja del medidor, la mueve el juego */
+    position: absolute;
+    inset-block: calc(var(--belmont-micro) * -1);
+    inset-inline-start: 50%;
+    inline-size: var(--belmont-border-thick);
+    background: var(--belmont-ink);
+    box-shadow: 0 0 var(--belmont-inner) var(--belmont-ink);
+  }
+  .belmont-trial.is-hot .belmont-trial__zone { background: var(--belmont-wax); }
+  .belmont-trial.is-done { border-inline-start-color: var(--belmont-wax); }
+  .belmont-trial.is-done .belmont-trial__act,
+  .belmont-trial.is-done .belmont-trial__skip,
+  .belmont-trial.is-done .belmont-trial__gauge { display: none; }
+  .belmont-trial.is-done .belmont-trial__state { color: var(--belmont-wax-text); }
+
+  /* Lo sellado se intuye pero no se lee: borroso, apagado y con un candado */
+  [data-sealed] { position: relative; }
+  [data-sealed] > span { display: block; } /* texto suelto envuelto: el difuminado va en el hijo, no en el rótulo */
+  [data-sealed] > * { transition: filter 0.6s var(--belmont-ease), opacity 0.6s var(--belmont-ease); }
+  /* se difuminan los hijos y no el bloque: así el rótulo del candado (::after) queda nítido */
+  [data-sealed]:not(.is-open) > * { filter: blur(0.35rem) grayscale(0.8); opacity: 0.3; user-select: none; }
+  [data-sealed]:not(.is-open)::after {
+    content: "✠ Sellado · supera la prueba";
+    /* syx-allow R03: rótulo del candado sobre el bloque sellado */
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    text-transform: uppercase;
+    color: var(--belmont-ink);
+    text-shadow: 0 0 var(--belmont-inner) var(--belmont-bg-deep);
+  }
+  .belmont-whip__list[data-sealed]:not(.is-open)::after { place-items: start center; padding-block-start: var(--belmont-gutter); }
+
+  /* Diana del látigo: murciélagos que aparecen en una de las ocho direcciones */
+  .belmont-rose__targets { position: absolute; inset: 0; pointer-events: none; }
+  .belmont-target {
+    /* syx-allow R03: diana colocada en polares por el juego */
+    position: absolute;
+    inline-size: 15%;
+    aspect-ratio: 2 / 1;
+    translate: -50% -50%;
+    color: color-mix(in oklch, var(--belmont-violet) 55%, var(--belmont-surface-2)); /* se recorta sobre la rosa oscura */
+    filter: drop-shadow(0 0 0.15rem var(--belmont-blood)) drop-shadow(0 0 0.6rem var(--belmont-blood-deep));
+  }
+  .belmont-target svg { display: block; inline-size: 100%; block-size: 100%; fill: currentColor; }
+  .belmont-target__eye { fill: var(--belmont-blood-text); }
+  .belmont-target.is-hit { color: var(--belmont-blood-text); }
+
+  /* Candelabro: Simon en la cornisa */
+  .belmont-ledge {
+    /* syx-allow R03: cornisa fija en el lateral del salón */
+    position: absolute;
+    inset-inline-end: 19%;
+    inset-block-start: 60%;
+    z-index: var(--belmont-z-text);
+    inline-size: calc(var(--belmont-simon-h) * 1.6);
+    pointer-events: none;
+  }
+  .belmont-ledge__stone { display: block; block-size: calc(var(--belmont-simon-h) * 0.18); margin-block-start: calc(var(--belmont-simon-h) * -0.02); background: linear-gradient(to bottom, var(--belmont-surface-2, var(--belmont-surface)), var(--belmont-bg-deep)); box-shadow: 0 var(--belmont-inner) var(--belmont-gutter) var(--belmont-bg-deep); }
+  .belmont-simon { position: absolute; inset-block-end: 100%; inset-inline-start: 30%; block-size: var(--belmont-simon-h); inline-size: auto; aspect-ratio: 40 / 64; overflow: visible; }
+  /* Simon en silueta: contraluz, solo el borde y la capa conservan color */
+  .belmont-simon__cape { fill: color-mix(in oklch, var(--belmont-blood-deep) 70%, var(--belmont-bg-deep)); }
+  .belmont-simon__head { fill: color-mix(in oklch, var(--belmont-ink) 18%, var(--belmont-bg-deep)); }
+  .belmont-simon__body { fill: var(--belmont-bg-deep); stroke: none; }
+  .belmont-simon__whip { fill: none; stroke: var(--belmont-wax); stroke-width: 1.5; stroke-linecap: round; }
+  .belmont-candle:disabled:not(.is-broken) { cursor: not-allowed; opacity: 0.55; }
+
+  /* Reloj: la aguja del juego y la marca de las XII */
+  .belmont-clock__hand--game { block-size: 44%; background: linear-gradient(to top, var(--belmont-wax), var(--belmont-ink)); box-shadow: 0 0 var(--belmont-inner) var(--belmont-wax); transform-origin: bottom center; }
+  .belmont-clock__xii {
+    /* syx-allow R03: marca de las doce en el borde de la esfera */
+    position: absolute;
+    inset-block-start: 2%;
+    inset-inline-start: 50%;
+    inline-size: 16%;
+    aspect-ratio: 1;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in oklch, var(--belmont-wax) 60%, transparent), transparent);
+  }
+  .belmont-clock.is-frozen .belmont-clock__pin { filter: saturate(0.2) hue-rotate(180deg) brightness(1.15); transition: filter 0.15s; }
+  .belmont-rose__label { font-size: 0.405rem; } /* Tiny5 a 16 px reales en la rosa (34rem / 220 u) */
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Criaturas: calaveras, arañas y ojos (decorado; sin eventos de puntero)
+   ───────────────────────────────────────────────────────────── */
+@layer syx.app {
+  :root {
+    --belmont-skull: clamp(2.25rem, 1.8rem + 1.5vw, 3.25rem);
+    --belmont-eye: 0.75rem;
+    --belmont-z-creatures: calc(var(--belmont-z-hud) - 1);
+  }
+  .belmont-creatures {
+    /* syx-allow R03: capa fija de las calaveras sobre la página, bajo el HUD */
+    position: fixed;
+    inset: 0;
+    z-index: var(--belmont-z-creatures);
+    pointer-events: none;
+    overflow: clip;
+  }
+  .belmont-skull {
+    /* syx-allow R03: la mueve GSAP con x/y desde la esquina */
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: calc(var(--belmont-skull) * var(--belmont-skull-k, 1));
+    translate: -50% -50%;
+    opacity: 0;
+    visibility: hidden;
+    filter: drop-shadow(0 0 0.6rem color-mix(in oklch, var(--belmont-blood) 60%, transparent)) drop-shadow(0 0.4rem 0.6rem var(--belmont-bg-deep));
+  }
+  .belmont-skull svg { display: block; inline-size: 100%; block-size: auto; overflow: visible; }
+  .belmont-skull__bone { fill: color-mix(in oklch, var(--belmont-ink) 82%, var(--belmont-wax)); }
+  .belmont-skull__crack { fill: none; stroke: var(--belmont-bg-deep); stroke-width: 1.2; stroke-linecap: round; }
+  .belmont-skull__socket { fill: var(--belmont-bg-deep); }
+  .belmont-skull__eye { fill: var(--belmont-blood-text); animation: belmont-ascua 1.6s ease-in-out infinite alternate; }
+  .belmont-skull__teeth { fill: none; stroke: var(--belmont-bg-deep); stroke-width: 1.4; }
+  @keyframes belmont-ascua { from { opacity: 0.45; } to { opacity: 1; } }
+
+  .belmont-stages__head { position: relative; }
+
+  .belmont-eyes {
+    /* syx-allow R03: par de ojos repartido al azar en la oscuridad */
+    position: absolute;
+    display: flex;
+    gap: calc(var(--belmont-eye) * 0.6);
+    opacity: 0;
+    scale: var(--belmont-eyes-s, 1);
+    pointer-events: none;
+  }
+  .belmont-eyes__eye {
+    display: grid;
+    place-items: center;
+    inline-size: var(--belmont-eye);
+    aspect-ratio: 1.7;
+    border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+    background: radial-gradient(circle, var(--belmont-wax) 0 20%, var(--belmont-blood-text) 45%, var(--belmont-blood-deep));
+    box-shadow: 0 0 var(--belmont-padding) var(--belmont-blood);
+    overflow: clip;
+  }
+  .belmont-eyes__eye > span { inline-size: 28%; block-size: 85%; border-radius: 50%; background: var(--belmont-bg-deep); }
+  .is-reduced .belmont-skull__eye { animation: none; }
+  @media (prefers-reduced-motion: reduce) { .belmont-skull__eye { animation: none; } }
+}
+
+@layer syx.app {
+  /* Móvil: la esfera queda entre la tarjeta y la prueba, en vez de debajo de las dos */
+  @media (max-width: 63.99em) {
+    .belmont-clock__copy { grid-template-rows: auto 1fr auto; block-size: 100svh; padding-block-end: var(--belmont-padding); }
+    .belmont-clock__card { padding: var(--belmont-padding); }
+    .belmont-clock__card .belmont-h2 { margin-block-end: var(--belmont-inner); }
+    .belmont-clock__card--trial { grid-row: 3; align-self: end; }
+    .belmont-clock__card--trial .belmont-trial { margin: 0; }
+    .belmont-chandelier-sec__card { padding: var(--belmont-padding); }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Rutas narrativas y capas: lo que va detrás del texto y lo que va delante
+   ───────────────────────────────────────────────────────────── */
+@layer syx.app {
+  :root {
+    --belmont-z-back: -1;      /* dentro de una sección aislada: sobre su fondo, bajo el texto */
+    --belmont-z-front: 3;      /* sobre el texto de la sección */
+    --belmont-blood-w: 3px;
+    --belmont-marker: 2.75rem;
+    --belmont-climber: clamp(3.5rem, 2.6rem + 3vw, 5.5rem);
+  }
+  .belmont-layered { isolation: isolate; }
+  .belmont-prologue { isolation: isolate; }
+
+  /* Prólogo: el reguero (detrás) y la gota (delante) */
+  .belmont-route {
+    /* syx-allow R03: capa de ruta que ocupa toda la sección */
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .belmont-route--back { z-index: var(--belmont-z-back); }
+  .belmont-route--front { z-index: var(--belmont-z-front); }
+  .belmont-route path { fill: none; stroke: var(--belmont-blood-deep); stroke-width: var(--belmont-blood-w); stroke-linecap: round; filter: drop-shadow(0 0 0.3rem var(--belmont-blood)); }
+  .belmont-drop-blood {
+    /* syx-allow R03: la gota la coloca MotionPath sobre el reguero */
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: 1.1rem;
+    aspect-ratio: 0.7;
+    translate: -50% -15%;
+    border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+    background: radial-gradient(circle at 35% 65%, color-mix(in oklch, var(--belmont-ink) 55%, var(--belmont-blood)) 0 8%, var(--belmont-blood) 30%, var(--belmont-blood-deep) 80%);
+    box-shadow: 0 0 var(--belmont-padding) var(--belmont-blood);
+    clip-path: polygon(50% 0, 72% 32%, 100% 62%, 100% 100%, 0 100%, 0 62%, 28% 32%);
+  }
+
+  /* Torre: Simon trepa entre los engranajes (los cercanos le pasan por delante) */
+  .belmont-climber {
+    /* syx-allow R03: escalador; lo coloca el scroll sobre las plataformas */
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: var(--belmont-climber); /* el centrado (-50 %, -100 %) lo pone GSAP con xPercent/yPercent: un translate en CSS lo absorbería y se perdería */
+    pointer-events: none;
+    filter: drop-shadow(0 0 0.15rem var(--belmont-wax)) drop-shadow(0 0 0.8rem color-mix(in oklch, var(--belmont-wax) 45%, transparent));
+  }
+  .belmont-clock__layer--near { filter: blur(3px) brightness(0.55); }
+
+  /* Final: el murciélago de Drácula */
+  .belmont-finale.is-dia .belmont-finale__copy { --belmont-dia-tinta: oklch(0.24 0.03 40); }
+  .belmont-finale__copy .belmont-kicker, .belmont-finale__end, .belmont-finale__line { transition: color 0.8s, text-shadow 0.8s; }
+  .belmont-finale.is-dia .belmont-finale__copy .belmont-kicker, .belmont-finale.is-dia .belmont-finale__end, .belmont-finale.is-dia .belmont-finale__line { color: var(--belmont-dia-tinta); text-shadow: 0 0 0.5em oklch(0.98 0.02 90 / 0.9), 0 0 1.4em oklch(0.98 0.02 90 / 0.7); } /* de día: tinta oscura con halo claro, legible sobre el cielo */
+  .belmont-finale__hunter { position: fixed; inset-block-start: 0; inset-inline-start: 0; z-index: var(--belmont-z-text); inline-size: clamp(4rem, 3rem + 3vw, 7rem); block-size: clamp(6rem, 4.5rem + 4.5vw, 10.5rem); visibility: hidden; pointer-events: none; } /* syx-allow R03: el cazador sobre la cima, colocado desde la escena 3D */
+  .belmont-finale__gloria { position: absolute; inset: -60% -120%; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in oklch, var(--belmont-wax) 70%, white), color-mix(in oklch, var(--belmont-wax) 30%, transparent) 45%, transparent 70%); opacity: 0; visibility: hidden; mix-blend-mode: screen; } /* syx-allow R03: el resplandor del triunfo */
+  .belmont-bat {
+    /* syx-allow R03: murciélago del final; lo lleva MotionPath */
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    z-index: var(--belmont-z-front);
+    inline-size: clamp(5rem, 4rem + 6vw, 10rem);
+    translate: -50% -50%;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .belmont-bat svg { display: block; inline-size: 100%; block-size: auto; overflow: visible; }
+  .belmont-bat__wing path:first-child, .belmont-bat__body { fill: var(--belmont-bg-deep); }
+  .belmont-bat__bone { fill: none; stroke: color-mix(in oklch, var(--belmont-violet) 45%, var(--belmont-bg-deep)); stroke-width: 0.8; }
+  .belmont-bat__eye { fill: var(--belmont-blood-text); filter: drop-shadow(0 0 2px var(--belmont-blood)); }
+
+  /* Niebla de primer plano */
+  .belmont-fogfront {
+    /* syx-allow R03: banco de niebla que cruza por delante del prólogo */
+    position: absolute;
+    inset-block: 35% 0;
+    inset-inline: -40%;
+    z-index: var(--belmont-z-front);
+    pointer-events: none;
+    background:
+      radial-gradient(30% 40% at 20% 60%, color-mix(in oklch, var(--belmont-violet) 35%, transparent), transparent 70%),
+      radial-gradient(25% 35% at 55% 70%, color-mix(in oklch, var(--belmont-moon) 14%, transparent), transparent 70%),
+      radial-gradient(35% 45% at 85% 55%, color-mix(in oklch, var(--belmont-violet) 30%, transparent), transparent 70%);
+    filter: blur(1.5rem);
+    opacity: 0.7;
+  }
+  .is-reduced .belmont-fogfront { display: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Modo prueba: el scroll se detiene y el panel queda fijo abajo, siempre a la vista
+   ───────────────────────────────────────────────────────────── */
+@layer syx.app {
+  .belmont-trial-hueco {
+    display: grid;
+    place-items: center;
+    margin-block: var(--belmont-padding);
+    max-inline-size: var(--belmont-measure);
+    padding: var(--belmont-inner);
+    text-align: center;
+    border: var(--belmont-border) dashed color-mix(in oklch, var(--belmont-blood) 55%, transparent);
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    text-transform: uppercase;
+    color: var(--belmont-ink-mute);
+    animation: belmont-hueco 0.35s var(--belmont-ease) both;
+  }
+  @keyframes belmont-hueco { from { opacity: 0; } }
+  .belmont-trial.is-playing {
+    /* syx-allow R03: panel de la prueba en curso, fijo sobre la escena */
+    position: fixed;
+    inset-block-end: var(--belmont-padding);
+    inset-inline-start: 50%;
+    z-index: calc(var(--belmont-z-hud) + 1);
+    inline-size: min(34rem, calc(100vw - var(--belmont-padding) * 2));
+    margin: 0;
+    translate: -50% 0;
+    background: color-mix(in oklch, var(--belmont-bg-deep) 94%, transparent);
+    box-shadow: 0 0 0 1px var(--belmont-blood), 0 var(--belmont-padding) var(--belmont-section) var(--belmont-bg-deep);
+    animation: belmont-sube 0.35s var(--belmont-ease) both;
+  }
+  .belmont-trial.is-playing .belmont-trial__goal::after {
+    content: " · Espacio para jugar · Esc para saltar";
+    content: var(--belmont-trial-keys, " · Espacio para jugar · Esc para saltar");
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    color: var(--belmont-wax-text);
+  }
+  .belmont-trial.is-playing .belmont-trial__act { min-inline-size: 9rem; font-size: var(--belmont-hud-size-lg); }
+  @keyframes belmont-sube { from { opacity: 0; translate: -50% 1.5rem; } }
+  /* en pantallas anchas el panel va a la esquina: la rosa, la esfera y el candelabro quedan libres en el centro */
+  @media (min-width: 64em) {
+    .belmont-trial.is-playing { inset-inline: auto var(--belmont-borde); translate: none; inline-size: min(30rem, 32vw); }
+    @keyframes belmont-sube { from { opacity: 0; translate: 0 1.5rem; } }
+  }
+  .is-reduced .belmont-trial.is-playing { animation: none; }
+  /* el hueco que deja el panel dentro de su tarjeta no se nota: se queda su sitio, vacío */
+  .belmont-trial.is-playing ~ * { opacity: 1; }
+
+  /* Reloj en juego: solo cuenta la aguja dorada; las demás se apagan y las XII brillan al pasar */
+  .belmont-clock__face.is-playing .belmont-clock__hand--h,
+  .belmont-clock__face.is-playing .belmont-clock__hand--m { opacity: 0.18; }
+  .belmont-clock__face.is-playing .belmont-clock__hand--game { inline-size: calc(var(--belmont-border-thick) * 2.5); }
+  .belmont-clock__face.is-hot .belmont-clock__xii { background: radial-gradient(closest-side, var(--belmont-wax), transparent); scale: 1.4; }
+  .belmont-clock__xii { transition: scale 0.15s, background 0.15s; }
+
+  /* Ventanas bajas (≤ 760 px): las tarjetas fijadas se compactan para caber */
+  @media (max-height: 47.5em) {
+    .belmont-chandelier-sec__copy { padding-block: calc(var(--belmont-hud-h) + var(--belmont-inner)) var(--belmont-inner); }
+    .belmont-chandelier-sec__card, .belmont-clock__card { padding: var(--belmont-padding); }
+    .belmont-chandelier-sec__card .belmont-h2, .belmont-clock__card .belmont-h2 { font-size: min(var(--belmont-step-2), 9vh); margin-block-end: var(--belmont-inner); }
+    .belmont-chandelier-sec__card .belmont-prose p, .belmont-clock__card .belmont-prose { font-size: 0.9375rem; line-height: 1.45; margin-block-end: var(--belmont-inner); }
+    .belmont-clock__copy { padding-block: calc(var(--belmont-hud-h) + var(--belmont-inner)) var(--belmont-inner); }
+    .belmont-clock__alt { margin-block-start: var(--belmont-inner); }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   El cazador en 3D (Blender): ocupa el sitio de la silueta, que queda de reserva
+   ───────────────────────────────────────────────────────────── */
+@layer syx.app {
+  .belmont-simon { display: block; }
+  .belmont-simon__svg { display: block; inline-size: 100%; block-size: 100%; overflow: visible; }
+  .belmont-icon3d--figura {
+    /* syx-allow R03: hueco del personaje 3D, algo mayor que la silueta para que quepan capa y látigo */
+    position: absolute;
+    inset: -14% -45% -4%;
+    pointer-events: none;
+    cursor: auto;
+  }
+  .is-icons3d .belmont-simon__svg,
+  .is-icons3d .belmont-atlas__marker > svg,
+  .is-icons3d .belmont-climber > svg { visibility: hidden; }
+  .is-icons3d .belmont-atlas__marker, .is-icons3d .belmont-climber, .is-icons3d .belmont-simon { filter: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   La carta del prólogo: pergamino, pluma y lacre
+   ───────────────────────────────────────────────────────────── */
+@layer syx.app {
+  :root {
+    --belmont-parchment: color-mix(in oklch, var(--belmont-wax) 24%, var(--belmont-ink));
+    --belmont-sepia: color-mix(in oklch, var(--belmont-bg-deep) 80%, var(--belmont-wax));
+    --belmont-letter-pad: clamp(1.5rem, 0.75rem + 3vw, 3.75rem);
+    --belmont-seal: clamp(3.75rem, 3rem + 2.5vw, 5.25rem);
+    --belmont-quill: clamp(2rem, 1.6rem + 1.4vw, 3rem);
+    /* fibras del papel: ruido fractal de SVG, teñido de sepia */
+    --belmont-fibras: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9 0.35' numOctaves='3' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.42 0 0 0 0 0.26 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23f)'/%3E%3C/svg%3E");
+  }
+  .belmont-letter {
+    /* syx-allow R03: referencia de la pluma y el lacre */
+    position: relative;
+    isolation: isolate;
+    max-inline-size: 40rem;
+    padding: var(--belmont-letter-pad) var(--belmont-letter-pad) calc(var(--belmont-letter-pad) + var(--belmont-seal) * 0.6);
+    color: var(--belmont-sepia);
+    font-family: var(--belmont-font-letter);
+    font-size: var(--belmont-body-size);
+    line-height: var(--belmont-leading);
+  }
+  .belmont-letter::before {
+    /* syx-allow R03: el pergamino, un poco torcido y con los bordes roídos */
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    rotate: -0.8deg;
+    /* pergamino: fibras (ruido), dos dobleces, manchas de humedad y de cera, bordes tostados por la vela */
+    background:
+      var(--belmont-fibras) 0 0 / 260px 260px,
+      linear-gradient(to right, transparent calc(50% - 1px), color-mix(in oklch, var(--belmont-ink) 40%, transparent) 50%, color-mix(in oklch, var(--belmont-sepia) 22%, transparent) calc(50% + 1.5px), transparent calc(50% + 14px)),
+      linear-gradient(to bottom, transparent calc(36% - 1px), color-mix(in oklch, var(--belmont-ink) 35%, transparent) 36%, color-mix(in oklch, var(--belmont-sepia) 18%, transparent) calc(36% + 1.5px), transparent calc(36% + 12px)),
+      radial-gradient(9% 6% at 84% 74%, color-mix(in oklch, var(--belmont-blood-deep) 16%, transparent), transparent 70%),
+      radial-gradient(11% 7% at 74% 88%, color-mix(in oklch, var(--belmont-sepia) 10%, transparent) 40%, color-mix(in oklch, var(--belmont-sepia) 22%, transparent) 46%, transparent 52%), /* el cerco de un vaso */
+      radial-gradient(40% 30% at 78% 22%, color-mix(in oklch, var(--belmont-wax) 22%, transparent), transparent 70%),
+      radial-gradient(35% 25% at 18% 80%, color-mix(in oklch, var(--belmont-sepia) 18%, transparent), transparent 70%),
+      radial-gradient(120% 95% at 50% 45%, transparent 50%, color-mix(in oklch, var(--belmont-sepia) 55%, transparent) 88%, color-mix(in oklch, var(--belmont-bg-deep) 70%, transparent)),
+      var(--belmont-parchment);
+    background-blend-mode: multiply, normal, normal, normal, normal, normal, normal, normal, normal;
+    clip-path: polygon(0.6% 1.2%, 9% 0.4%, 22% 1.4%, 37% 0.2%, 51% 1%, 66% 0.3%, 80% 1.3%, 92% 0.2%, 99.5% 1.6%, 98.8% 14%, 99.7% 31%, 98.9% 49%, 99.8% 66%, 98.7% 82%, 99.4% 98.6%, 87% 99.6%, 73% 98.7%, 58% 99.8%, 43% 98.8%, 28% 99.7%, 14% 98.9%, 0.4% 99.4%, 1.3% 84%, 0.2% 67%, 1.1% 50%, 0.3% 33%, 1.2% 16%);
+    filter: drop-shadow(0 1.5rem 2.5rem var(--belmont-bg-deep));
+  }
+  .belmont-letter p { margin: 0 0 var(--belmont-inner); color: var(--belmont-sepia); font-family: var(--belmont-font-letter); }
+  .belmont-letter .belmont-letter__date { font-style: italic; text-align: end; font-size: 0.85em; margin-block-end: var(--belmont-gutter); }
+  .belmont-letter .belmont-letter__to { font-style: italic; margin-block-end: var(--belmont-padding); }
+  .belmont-letter__body p { text-wrap: pretty; margin-block-end: var(--belmont-padding); }
+  .belmont-letter strong { font-weight: 400; color: var(--belmont-blood-deep); }
+  .belmont-letter__cap {
+    display: inline-block;
+    font-family: var(--belmont-font-gothic);
+    font-size: 3.4em;
+    line-height: 0.7;
+    vertical-align: -0.14em;
+    padding-block-start: 0.06em;
+    margin-inline-end: 0.04em;
+    color: var(--belmont-blood-deep);
+    text-shadow: 0.03em 0.03em 0 color-mix(in oklch, var(--belmont-wax) 70%, transparent);
+  }
+  .belmont-letter .belmont-letter__ps { font-style: italic; font-size: 0.88em; margin-block-start: var(--belmont-padding); }
+  .belmont-letter .belmont-letter__sign { font-style: italic; text-align: end; font-size: 1.25em; margin-block-start: var(--belmont-gutter); padding-inline-end: calc(var(--belmont-seal) * 1.3); }
+  /* la tinta aparece donde ya ha pasado la pluma */
+  .belmont-letter__line {
+    padding-block: 0.9em; margin-block: -0.9em; /* sitio para la capitular y los rasgos altos: la máscara recorta en la caja del renglón */
+    -webkit-mask-image: linear-gradient(to right, var(--belmont-bg-deep) var(--belmont-pen, 200vw), transparent calc(var(--belmont-pen, 200vw) + 1.5em));
+    mask-image: linear-gradient(to right, var(--belmont-bg-deep) var(--belmont-pen, 200vw), transparent calc(var(--belmont-pen, 200vw) + 1.5em));
+  }
+  .belmont-letter__seal {
+    /* syx-allow R03: el lacre junto a la firma */
+    position: absolute;
+    inset-block-end: calc(var(--belmont-letter-pad) * 0.6);
+    inset-inline-end: calc(var(--belmont-letter-pad) * 0.8);
+    display: grid;
+    place-items: center;
+    inline-size: var(--belmont-seal);
+    aspect-ratio: 1;
+    border-radius: 47% 53% 50% 46% / 52% 45% 55% 48%;
+    background: radial-gradient(circle at 38% 34%, color-mix(in oklch, var(--belmont-blood-text) 70%, var(--belmont-blood)) 0 12%, var(--belmont-blood) 40%, var(--belmont-blood-deep) 85%);
+    box-shadow: 0 0.2rem 0.5rem color-mix(in oklch, var(--belmont-bg-deep) 70%, transparent), inset 0 -0.2rem 0.4rem color-mix(in oklch, var(--belmont-bg-deep) 50%, transparent);
+  }
+  .belmont-letter__seal span {
+    display: grid;
+    place-items: center;
+    inline-size: 66%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: var(--belmont-border-thick) solid color-mix(in oklch, var(--belmont-blood-deep) 70%, var(--belmont-bg-deep));
+    font-family: var(--belmont-font-gothic);
+    font-size: calc(var(--belmont-seal) * 0.36);
+    line-height: 1;
+    color: color-mix(in oklch, var(--belmont-blood-deep) 60%, var(--belmont-bg-deep));
+    text-shadow: 0 1px 0 color-mix(in oklch, var(--belmont-blood-text) 60%, transparent);
+  }
+  .belmont-letter__quill {
+    /* syx-allow R03: la pluma; GSAP la lleva a la punta del renglón */
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: var(--belmont-quill); /* GSAP la inclina y apoya su punta (xPercent/yPercent) */
+    pointer-events: none;
+    filter: drop-shadow(0.35rem 0.5rem 0.25rem color-mix(in oklch, var(--belmont-sepia) 35%, transparent));
+  }
+  .belmont-letter__quill svg { display: block; inline-size: 100%; block-size: auto; overflow: visible; }
+  .belmont-letter__vane { fill: color-mix(in oklch, var(--belmont-ink) 85%, var(--belmont-violet)); }
+  .belmont-letter__shaft, .belmont-letter__barbs { fill: none; stroke: var(--belmont-sepia); stroke-width: 1.2; stroke-linecap: round; }
+  .belmont-letter__barbs { stroke-width: 0.7; opacity: 0.6; }
+  .belmont-letter.is-written .belmont-letter__quill, .belmont-letter.is-written .belmont-letter__3d { display: none; }
+  .belmont-letter.is-pluma3d .belmont-letter__quill { visibility: hidden; }
+  .belmont-prologue .belmont-fogfront { opacity: 0.35; } /* la niebla no se come la carta */
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Cuaderno del cazador: láminas a tinta en los márgenes, detrás del texto
+   ───────────────────────────────────────────────────────────── */
+@layer syx.app {
+  :root {
+    --belmont-plate-w: clamp(11rem, 5rem + 12vw, 19rem);
+    --belmont-plate-ink: color-mix(in oklch, var(--belmont-wax) 40%, var(--belmont-ink-soft));
+    --belmont-plate-edge: max(0.5rem, calc((100% - var(--belmont-max)) / 2 + 0.5rem));
+  }
+  .belmont-plate {
+    /* syx-allow R03: lámina en el margen de su sección */
+    position: absolute;
+    z-index: var(--belmont-z-back);
+    margin: 0;
+    inline-size: var(--belmont-plate-w);
+    color: var(--belmont-plate-ink);
+    pointer-events: none;
+  }
+  .belmont-plate svg { display: block; inline-size: 100%; block-size: auto; overflow: visible; }
+  .belmont-plate__s { fill: none; stroke: currentColor; stroke-width: 0.9; stroke-linecap: round; stroke-linejoin: round; opacity: 0.8; }
+  .belmont-plate__s--2 { stroke-width: 0.55; opacity: 0.4; }
+  .belmont-plate__s--guia { stroke-width: 0.45; opacity: 0.3; }
+  .belmont-plate__s--sangre { stroke: var(--belmont-blood-text); opacity: 0.85; }
+  .belmont-plate__h { fill: none; stroke: currentColor; stroke-width: 0.45; stroke-linecap: round; opacity: 0.55; }
+  .belmont-plate__h--2 { stroke-width: 0.4; opacity: 0.6; }
+  .belmont-plate__h--3 { stroke-width: 0.5; opacity: 0.7; }
+  .belmont-plate__s--peso { stroke-width: 1.25; opacity: 0.9; } /* el contorno de grabado, cargado de tinta */
+  .belmont-plate__f { fill: color-mix(in oklch, var(--belmont-bg-deep) 96%, currentColor); stroke: none; } /* hondo de tinta: órbitas, fauces */
+  .belmont-plate__tapa { fill: var(--belmont-plate-paper, var(--belmont-bg-deep)); stroke: none; }
+  .belmont-plate__f--sangre { fill: var(--belmont-blood-text); }
+  .belmont-plate__t { fill: currentColor; font-family: var(--belmont-font-letter); font-style: italic; font-size: 7px; letter-spacing: 0.08em; opacity: 0.8; }
+  /* los enemigos del campo de pruebas, a plumilla fina */
+  .belmont-arsenal__foe .belmont-plate__s { stroke-width: 0.5; opacity: 0.85; }
+  .belmont-arsenal__foe .belmont-plate__s--2 { stroke-width: 0.3; opacity: 0.45; }
+  .belmont-arsenal__foe .belmont-plate__s--peso { stroke-width: 0.75; }
+  .belmont-arsenal__foe .belmont-plate__s--guia { stroke-width: 0.28; opacity: 0.3; }
+  .belmont-arsenal__foe .belmont-plate__h { stroke-width: 0.26; opacity: 0.62; }
+  .belmont-arsenal__foe .belmont-plate__h--2 { stroke-width: 0.24; opacity: 0.7; }
+  .belmont-arsenal__foe .belmont-plate__h--3 { stroke-width: 0.26; opacity: 0.8; }
+  .belmont-plate__t--centro { text-anchor: middle; font-size: 6px; letter-spacing: 0.22em; font-style: normal; }
+  .belmont-plate__t--sello { font-style: normal; font-size: 7.5px; letter-spacing: 0.32em; }
+  .belmont-plate__note {
+    display: block;
+    margin-block-start: var(--belmont-inner);
+    scale: -1 1; /* escritura especular, de derecha a izquierda */
+    font-family: var(--belmont-font-letter);
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.2;
+    text-align: end;
+    opacity: 0.75;
+  }
+  .belmont-plate__cap {
+    margin-block-start: var(--belmont-micro);
+    font-family: var(--belmont-font-letter);
+    font-style: italic;
+    font-size: 0.875rem;
+    line-height: 1.35;
+    color: var(--belmont-ink-mute);
+  }
+  .belmont-plate__cap span { font-style: normal; letter-spacing: 0.08em; text-transform: uppercase; color: var(--belmont-plate-ink); }
+  .belmont-plate--izq, .belmont-plate--izq-arriba { inset-inline-start: var(--belmont-plate-edge); }
+  .belmont-plate--der, .belmont-plate--der-arriba { inset-inline-end: var(--belmont-plate-edge); }
+  .belmont-plate--izq, .belmont-plate--der { inset-block-start: 50%; translate: 0 -50%; }
+  .belmont-plate--izq-arriba, .belmont-plate--der-arriba { inset-block-start: var(--belmont-gutter); }
+  /* la telaraña del muro: su origen en la esquina del muro, la nota encima */
+  .belmont-secret__wallbox { position: relative; }
+  .belmont-plate--esquina {
+    z-index: var(--belmont-z-front);
+    inset-block-start: 0.25rem;
+    inset-inline-start: 0.25rem;
+    inline-size: clamp(9rem, 5rem + 8vw, 14rem);
+    transition: opacity var(--belmont-dur-slow) var(--belmont-ease);
+  }
+  .belmont-plate--esquina .belmont-plate__note, .belmont-plate--esquina .belmont-plate__cap {
+    /* syx-allow R03: la nota de la telaraña va encima del muro, no sobre los sillares */
+    position: absolute;
+    inset-inline-start: 0;
+    inline-size: 150%;
+  }
+  .belmont-plate--esquina .belmont-plate__cap { inset-block-end: calc(100% + var(--belmont-inner)); }
+  .belmont-plate--esquina .belmont-plate__note { inset-block-end: calc(100% + 2.6rem); text-align: start; }
+  .is-broken .belmont-plate--esquina { opacity: 0; }
+  /* en pantallas estrechas la lámina queda pequeña y tenue en una esquina, sin notas */
+  @media (max-width: 63.99em) {
+    .belmont-plate.belmont-plate { inline-size: 6.5rem; inset-block-start: var(--belmont-inner); inset-inline: auto var(--belmont-inner); translate: none; opacity: 0.3; }
+    .belmont-plate__note, .belmont-plate__cap { display: none; }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Mapa de niveles: Transilvania a tinta, el camino y el cartucho de la fase
+   ───────────────────────────────────────────────────────────── */
+@layer syx.app {
+  :root {
+    --belmont-atlas-ink: color-mix(in oklch, var(--belmont-wax) 38%, var(--belmont-ink-soft));
+    --belmont-atlas-marker: clamp(3.25rem, 2.5rem + 2.5vw, 5rem);
+    --belmont-atlas-card: min(24rem, calc(100vw - 2 * var(--belmont-padding)));
+  }
+  .belmont-atlas {
+    /* syx-allow R03: marco de la cámara; el mapa y el cazador se colocan dentro */
+    position: relative;
+    block-size: 100svh;
+    overflow: clip;
+    background:
+      radial-gradient(70% 60% at 60% 45%, color-mix(in oklch, var(--belmont-violet) 12%, transparent), transparent 70%),
+      var(--belmont-bg-deep);
+  }
+  .belmont-atlas__map {
+    /* syx-allow R03: lienzo del mapa en unidades de su viewBox; GSAP lo escala y lo mueve */
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: 1600px;
+    block-size: 1000px;
+    color: var(--belmont-atlas-ink);
+    will-change: transform;
+  }
+  .belmont-atlas__map svg { display: block; inline-size: 100%; block-size: 100%; overflow: visible; }
+  .belmont-atlas__label { fill: var(--belmont-atlas-ink); font-family: var(--belmont-font-letter); font-style: italic; font-size: 22px; opacity: 0.85; }
+  .belmont-atlas__label--n { font-style: normal; font-size: 26px; }
+  .belmont-atlas__titlemap { fill: var(--belmont-atlas-ink); font-family: var(--belmont-font-letter); font-size: 30px; letter-spacing: 0.3em; text-anchor: middle; opacity: 0.7; }
+  .belmont-atlas__ghost { fill: none; stroke: var(--belmont-atlas-ink); stroke-width: 3; stroke-dasharray: 2 12; stroke-linecap: round; opacity: 0.55; }
+  .belmont-atlas__route { fill: none; stroke: var(--belmont-blood); stroke-width: 5; stroke-linecap: round; filter: drop-shadow(0 0 6px var(--belmont-blood)); }
+  .belmont-atlas__node circle { fill: var(--belmont-bg-deep); stroke: var(--belmont-atlas-ink); stroke-width: 2.5; transition: fill 0.3s, stroke 0.3s; }
+  .belmont-atlas__node text { fill: var(--belmont-ink-soft); font-family: var(--belmont-font-hud); font-size: 18px; text-anchor: middle; }
+  .belmont-atlas__node.is-lit circle { fill: var(--belmont-blood-deep); stroke: var(--belmont-wax); filter: drop-shadow(0 0 8px var(--belmont-blood)); }
+  .belmont-atlas__node.is-lit text { fill: var(--belmont-ink); }
+  .belmont-atlas__marker {
+    /* syx-allow R03: el cazador sobre el camino; lo coloca el scroll */
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    z-index: 2;
+    inline-size: var(--belmont-atlas-marker);
+    aspect-ratio: 0.62; /* GSAP apoya sus pies en el camino (xPercent/yPercent) */
+    pointer-events: none;
+  }
+  .belmont-atlas__marker > svg { display: block; inline-size: 100%; block-size: auto; overflow: visible; }
+  /* el cartucho de la fase: un pergamino pequeño, como la carta */
+  .belmont-atlas__cards {
+    /* syx-allow R03: cartucho fijo arriba a la izquierda, sobre las montañas: no tapa el camino */
+    position: absolute;
+    inset-block-start: calc(var(--belmont-hud-h) + var(--belmont-padding));
+    inset-inline-start: var(--belmont-borde);
+    z-index: 3;
+    display: grid;
+    inline-size: var(--belmont-atlas-card);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .belmont-atlas__card {
+    grid-area: 1 / 1;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: var(--belmont-padding);
+    align-items: center;
+    padding: var(--belmont-padding) var(--belmont-gutter) var(--belmont-gutter);
+    color: var(--belmont-sepia);
+    background:
+      radial-gradient(120% 90% at 50% 45%, transparent 55%, color-mix(in oklch, var(--belmont-sepia) 40%, transparent)),
+      var(--belmont-parchment);
+    clip-path: polygon(0.8% 2%, 18% 0.5%, 40% 1.8%, 63% 0.4%, 86% 1.6%, 99.4% 0.8%, 98.6% 34%, 99.6% 70%, 98.8% 99%, 74% 98.2%, 50% 99.6%, 26% 98.4%, 0.6% 99.4%, 1.4% 64%, 0.3% 30%);
+    opacity: 0;
+    translate: 0 1rem;
+    transition: opacity 0.35s var(--belmont-ease), translate 0.35s var(--belmont-ease);
+  }
+  .belmont-atlas__card.is-on { opacity: 1; translate: 0 0; }
+  .belmont-atlas__art { grid-row: span 2; color: var(--belmont-blood-deep); }
+  .belmont-atlas__art svg { display: block; inline-size: 2.75rem; block-size: 2.75rem; }
+  .belmont-atlas__num { font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); color: var(--belmont-blood-deep); }
+  .belmont-atlas__title { margin: 0; font-family: var(--belmont-font-gothic); font-weight: 400; font-size: var(--belmont-step-1); line-height: var(--belmont-lh-step-1); color: var(--belmont-bg-deep); }
+  .belmont-atlas__card p { grid-column: 1 / -1; margin: var(--belmont-inner) 0 0; font-family: var(--belmont-font-letter); font-style: italic; color: var(--belmont-sepia); }
+  .belmont-atlas__hint {
+    /* syx-allow R03: aviso bajo el cartucho */
+    position: absolute;
+    inset-block-end: var(--belmont-padding);
+    inset-inline-start: var(--belmont-borde);
+    z-index: 3;
+    margin: 0;
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    color: var(--belmont-ink-mute);
+  }
+  @media (max-width: 47.99em) {
+    .belmont-atlas__cards { inset-inline: var(--belmont-padding); inline-size: auto; }
+    .belmont-atlas__hint { inset-inline-start: var(--belmont-padding); }
+  }
+  /* movimiento reducido: el mapa entero, quieto, y las fases en lista debajo */
+  .belmont-atlas.is-static { block-size: auto; aspect-ratio: auto; display: grid; gap: var(--belmont-gutter); padding-block-end: var(--belmont-gutter); }
+  .belmont-atlas.is-static .belmont-atlas__map { position: relative; inline-size: 100%; block-size: auto; aspect-ratio: 1.6; }
+  .belmont-atlas.is-static .belmont-atlas__marker, .belmont-atlas.is-static .belmont-atlas__hint { display: none; }
+  .belmont-atlas.is-static .belmont-atlas__cards { position: static; inline-size: auto; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); gap: var(--belmont-gutter); padding-inline: var(--belmont-margin); }
+  .belmont-atlas.is-static .belmont-atlas__card { grid-area: auto; opacity: 1; translate: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Arsenal: el armero, el campo de pruebas y la ficha del arma
+   ───────────────────────────────────────────────────────────── */
+@layer syx.app {
+  :root { --belmont-range-h: clamp(16rem, 8rem + 26svh, 24rem); }
+  .belmont-arsenal { position: relative; background: var(--belmont-bg); }
+  .belmont-arsenal__pin { padding-block: var(--belmont-section) var(--belmont-gutter); }
+  .belmont-arsenal__head { margin-block-end: var(--belmont-gutter); }
+  .belmont-arsenal__body { row-gap: var(--belmont-padding); align-items: start; }
+  .belmont-arsenal__list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--belmont-inner); margin: 0; padding: 0; list-style: none; }
+  .belmont-trial.is-playing.is-inline { position: relative; inset: auto; z-index: auto; inline-size: auto; translate: none; animation: none; }
+  .belmont-weapon {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: var(--belmont-micro);
+    inline-size: 100%;
+    padding: var(--belmont-inner) var(--belmont-inner) var(--belmont-padding);
+    color: var(--belmont-ink);
+    background: var(--belmont-surface);
+    border: var(--belmont-border) solid var(--belmont-line);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    transition: border-color 0.2s, opacity 0.3s;
+  }
+  .belmont-weapon:hover, .belmont-weapon:focus-visible { border-color: var(--belmont-wax); }
+  .belmont-weapon:focus-visible { outline: var(--belmont-border-thick) solid var(--semantic-focus-ring-color); outline-offset: 2px; }
+  .belmont-weapon__icon { position: relative; display: grid; place-items: center; inline-size: 100%; aspect-ratio: 1; color: var(--belmont-wax); background: radial-gradient(circle, color-mix(in oklch, var(--belmont-wax) 12%, transparent), transparent 70%); }
+  .belmont-weapon__icon svg { inline-size: 55%; block-size: auto; }
+  .belmont-weapon .belmont-icon3d { pointer-events: none; cursor: inherit; }
+  .belmont-weapon { container-type: inline-size; }
+  .belmont-weapon__name { font-family: var(--belmont-font-display); font-size: min(var(--belmont-body-size), 11cqi); line-height: 1.2; text-align: center; overflow-wrap: anywhere; hyphens: auto; } /* «Cronómetro» cabe en la ficha estrecha */
+  .belmont-weapon__pill { font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); color: var(--belmont-wax-text); }
+  .belmont-weapon__ok { position: absolute; inset-block-start: var(--belmont-inner); inset-inline-end: var(--belmont-inner); font-family: var(--belmont-font-hud); font-size: 0.75rem; color: var(--belmont-blood-text); opacity: 0; } /* syx-allow R03: sello de equipada */
+  .belmont-weapon.is-equipped { border-color: var(--belmont-blood); opacity: 0.6; }
+  .belmont-weapon.is-equipped .belmont-weapon__ok { opacity: 1; }
+  .belmont-arsenal__ghost {
+    /* syx-allow R03: el arma que se arrastra, pegada al puntero */
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    z-index: calc(var(--belmont-z-hud) + 2);
+    inline-size: 3.5rem;
+    color: var(--belmont-wax);
+    pointer-events: none;
+    filter: drop-shadow(0 0 0.6rem var(--belmont-wax));
+  }
+  .belmont-arsenal__ghost svg, .belmont-arsenal__shot svg { display: block; inline-size: 100%; block-size: auto; }
+  /* el campo de pruebas */
+  .belmont-arsenal__range {
+    /* syx-allow R03: escenario de los efectos */
+    position: relative;
+    block-size: var(--belmont-range-h);
+    overflow: clip;
+    background: radial-gradient(80% 70% at 30% 80%, color-mix(in oklch, var(--belmont-violet) 22%, transparent), transparent 70%), var(--belmont-bg-deep);
+    border: var(--belmont-border) solid var(--belmont-line-soft);
+    transition: filter 0.4s;
+  }
+  .belmont-arsenal__range > * { position: absolute; } /* syx-allow R03: piezas del escenario */
+  .belmont-arsenal__floor { inset: 82% 0 0; background: linear-gradient(to bottom, var(--belmont-surface-2), var(--belmont-bg-deep)); border-block-start: var(--belmont-border) solid var(--belmont-line); }
+  .belmont-arsenal__drop {
+    inset-block-end: 18%;
+    inset-inline-start: 8%;
+    display: grid;
+    justify-items: center;
+    inline-size: clamp(5rem, 3rem + 5vw, 7.5rem);
+    padding-block-start: calc(var(--belmont-padding) + 1rem);
+    border: var(--belmont-border) dashed transparent;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .is-dragging .belmont-arsenal__drop { border-color: color-mix(in oklch, var(--belmont-wax) 60%, transparent); }
+  .belmont-arsenal__drop.is-over { border-color: var(--belmont-wax); background: color-mix(in oklch, var(--belmont-wax) 12%, transparent); }
+  .belmont-arsenal__hero { position: relative; inline-size: 52%; aspect-ratio: 0.62; } /* syx-allow R03: hueco del cazador 3D */
+  .belmont-arsenal__viva {
+    /* syx-allow R03: la enhorabuena flota sobre la cabeza del cazador */
+    position: absolute;
+    inset-block-start: -0.5rem;
+    inset-inline-start: 50%; /* el -50 % lo pone GSAP (xPercent) */
+    white-space: nowrap;
+    font-family: var(--belmont-font-hud);
+    font-size: var(--belmont-hud-size);
+    color: var(--belmont-wax-text);
+    text-shadow: 0 0 0.6rem var(--belmont-wax), 0 1px 0 var(--belmont-bg-deep);
+    pointer-events: none;
+  }
+  .belmont-arsenal__hint { position: absolute; inset-block-start: 0; inset-inline: 0; text-align: center; /* syx-allow R03: el aviso flota sobre la cabeza; no empuja al cazador fuera del suelo */ font-family: var(--belmont-font-hud); font-size: 0.75rem; color: var(--belmont-wax-text); opacity: 0; transition: opacity 0.2s; }
+  .is-dragging .belmont-arsenal__hint { opacity: 1; }
+  .belmont-arsenal__skeleton { inset-block-end: 18%; inset-inline-end: 12%; inline-size: clamp(2.5rem, 1.5rem + 3vw, 4rem); }
+  .belmont-arsenal__skeleton svg { display: block; inline-size: 100%; fill: none; stroke: color-mix(in oklch, var(--belmont-ink) 70%, var(--belmont-bg-deep)); stroke-width: 2.2; stroke-linecap: round; }
+  .belmont-arsenal__skeleton circle { fill: color-mix(in oklch, var(--belmont-ink) 70%, var(--belmont-bg-deep)); }
+  .belmont-arsenal__bat { inset-block-start: 14%; inset-inline-end: 30%; inline-size: clamp(3rem, 2rem + 3vw, 4.5rem); }
+  .belmont-arsenal__bat svg { display: block; inline-size: 100%; fill: color-mix(in oklch, var(--belmont-violet) 50%, var(--belmont-bg-deep)); }
+  .belmont-arsenal__fx { inset: 0; pointer-events: none; }
+  .belmont-arsenal__shot { position: absolute; inset-block-start: 0; inset-inline-start: 0; inline-size: 2.4rem; color: var(--belmont-wax); filter: drop-shadow(0 0 0.4rem var(--belmont-wax)); } /* syx-allow R03: proyectil */
+  .belmont-arsenal__shot.is-agua { color: var(--belmont-moon); filter: drop-shadow(0 0 0.4rem var(--belmont-moon)); }
+  .belmont-arsenal__shot.is-reloj { inline-size: 3rem; }
+  .belmont-arsenal__flame {
+    /* syx-allow R03: llama del agua bendita */
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: 1rem;
+    block-size: 2.4rem;
+    border-radius: 50% 50% 40% 40% / 70% 70% 30% 30%;
+    background: linear-gradient(to top, var(--belmont-blood), var(--belmont-wax) 60%, color-mix(in oklch, var(--belmont-ink) 70%, var(--belmont-wax)));
+    filter: blur(1px) drop-shadow(0 0 0.5rem var(--belmont-wax));
+    transform-origin: 50% 100%;
+  }
+  .is-frozen { filter: grayscale(1) brightness(0.8) sepia(0.4) hue-rotate(180deg); }
+  /* la ficha del arma */
+  .belmont-arsenal__info { padding: var(--belmont-padding) var(--belmont-gutter); background: var(--belmont-surface); border-inline-start: var(--belmont-border-thick) solid var(--belmont-wax); }
+  .belmont-arsenal__infohead { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--belmont-inner) var(--belmont-padding); margin: 0 0 var(--belmont-inner); font-family: var(--belmont-font-display); font-size: var(--belmont-step-1); line-height: var(--belmont-lh-step-1); }
+  .belmont-arsenal__formula { font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); color: var(--belmont-wax-text); }
+  .belmont-arsenal__infotext { margin: 0; color: var(--belmont-ink-soft); max-inline-size: var(--belmont-measure); }
+  .belmont-arsenal__note { color: var(--belmont-ink-mute); }
+  @media (min-width: 64em) {
+    .belmont-arsenal__head { grid-column: d3-0 / d4-2; }
+    .belmont-arsenal__body { grid-template-rows: auto auto auto; }
+    .belmont-arsenal__list { grid-column: d3-0 / d4-1; grid-row: 1 / span 4; grid-template-columns: minmax(0, 1fr); align-self: start; }
+    .belmont-weapon { grid-template-columns: 3.75rem 1fr; grid-template-rows: auto auto; justify-items: start; align-items: center; column-gap: var(--belmont-padding); padding: var(--belmont-inner) var(--belmont-padding); }
+    .belmont-weapon__icon { grid-row: span 2; }
+    .belmont-weapon__name { text-align: start; align-self: end; }
+    .belmont-weapon__pill { align-self: start; }
+    .belmont-arsenal__range { grid-column: d4-1 / d3-3; }
+    .belmont-arsenal__info { grid-column: d4-1 / d3-3; }
+    .belmont-arsenal__trial, .belmont-arsenal__note { grid-column: d4-1 / d3-3; }
+  }
+  @media (max-width: 47.99em) {
+    .belmont-weapon__name { font-size: 0.8rem; }
+    .belmont-weapon__pill { display: none; }
+  }
+}
+
+@layer syx.app {
+  .belmont-hero__shine path { fill: none; stroke: color-mix(in oklch, var(--belmont-ink) 55%, transparent); stroke-width: 2; stroke-linecap: round; opacity: 0.55; }
+  .belmont-hero__shine circle { fill: color-mix(in oklch, var(--belmont-ink) 60%, transparent); }
+}
+
+@layer syx.app {
+  /* tras los murciélagos: la lista es lo aprendido, no pasos pendientes */
+  .belmont-whip__learned { list-style: none; margin-block-end: var(--belmont-inner); font-family: var(--belmont-font-hud); font-size: var(--belmont-hud-size); color: var(--belmont-wax-text); }
+  .belmont-whip__list.is-open .belmont-whip__item { opacity: 1; }
+  .belmont-rose.is-mastered { cursor: default; }
+  .belmont-rose.is-mastered .belmont-rose__label { color: var(--belmont-wax-text); }
+}
+
+@layer syx.app {
+  /* campo de pruebas como lámina: enemigos a tinta, trayectorias trazadas, fichas que se acumulan */
+  .belmont-arsenal__range {
+    background:
+      repeating-linear-gradient(to right, color-mix(in oklch, var(--belmont-wax) 6%, transparent) 0 1px, transparent 1px 48px),
+      repeating-linear-gradient(to bottom, color-mix(in oklch, var(--belmont-wax) 6%, transparent) 0 1px, transparent 1px 48px),
+      radial-gradient(80% 70% at 30% 80%, color-mix(in oklch, var(--belmont-violet) 22%, transparent), transparent 70%),
+      var(--belmont-bg-deep);
+    border-color: color-mix(in oklch, var(--belmont-wax) 30%, var(--belmont-line));
+    box-shadow: inset 0 0 0 4px var(--belmont-bg-deep), inset 0 0 0 5px color-mix(in oklch, var(--belmont-wax) 20%, transparent);
+  }
+  .belmont-arsenal__rangetitle { inset-block-start: var(--belmont-inner); inset-inline-start: var(--belmont-padding); margin: 0; font-family: var(--belmont-font-letter); font-style: italic; font-size: 0.875rem; letter-spacing: 0.12em; color: color-mix(in oklch, var(--belmont-wax) 55%, var(--belmont-ink-mute)); }
+  .belmont-arsenal__foe { color: color-mix(in oklch, var(--belmont-wax) 40%, var(--belmont-ink-soft)); }
+  .belmont-arsenal__foe svg { display: block; inline-size: 100%; block-size: auto; overflow: visible; }
+  .belmont-arsenal__foe--lobo { inset-block-end: 18%; inset-inline-start: 44%; inline-size: clamp(5rem, 2.5rem + 6.2vw, 8.8rem); }
+  .belmont-arsenal__foe--vampiro { inset-block-end: 18%; inset-inline-end: 7%; inline-size: clamp(4.6rem, 2.2rem + 5.8vw, 8rem); }
+  .belmont-arsenal__foe--murcielago { inset-block-start: 8%; inset-inline-start: 58%; inline-size: clamp(6rem, 3rem + 8vw, 11rem); }
+  .belmont-arsenal__traces { inset: 0; inline-size: 100%; block-size: 100%; overflow: visible; pointer-events: none; }
+  .belmont-arsenal__traces path { fill: none; stroke: var(--belmont-blood-text); stroke-width: 1.6; stroke-linecap: round; opacity: 0.9; transition: opacity 0.6s; }
+  .belmont-arsenal__traces text { fill: var(--belmont-wax-text); font-family: var(--belmont-font-hud); font-size: 13px; text-anchor: middle; transition: opacity 0.6s; paint-order: stroke; stroke: var(--belmont-bg-deep); stroke-width: 4px; stroke-linejoin: round; } /* un halo de papel: legible aunque pase por encima de un boceto */
+  .belmont-arsenal__traces text.is-old { opacity: 0; } /* la fórmula vieja se va; queda solo su trazo */
+  .belmont-arsenal__traces .is-old { opacity: 0.22; }
+  .belmont-arsenal__floor { background: repeating-linear-gradient(-45deg, color-mix(in oklch, var(--belmont-wax) 10%, transparent) 0 1px, transparent 1px 7px), linear-gradient(to bottom, var(--belmont-surface-2), var(--belmont-bg-deep)); }
+  /* las fichas */
+  .belmont-arsenal__log { display: grid; gap: var(--belmont-inner); margin: 0; padding: 0; list-style: none; }
+  .belmont-arsenal__intro { padding: var(--belmont-padding) var(--belmont-gutter); color: var(--belmont-ink-soft); background: var(--belmont-surface); border-inline-start: var(--belmont-border-thick) solid var(--belmont-line); }
+  .belmont-arsenal__entry { display: grid; grid-template-columns: 2.5rem 1fr; gap: var(--belmont-padding); align-items: start; overflow: hidden; padding: var(--belmont-padding) var(--belmont-gutter); background: var(--belmont-surface); border-inline-start: var(--belmont-border-thick) solid var(--belmont-line); opacity: 0.7; transition: opacity 0.4s, border-color 0.4s; }
+  .belmont-arsenal__entry.is-new { opacity: 1; border-inline-start-color: var(--belmont-wax); }
+  .belmont-arsenal__entry:not(.is-new) .belmont-arsenal__infotext { display: none; } /* las anteriores, plegadas a su título y fórmula */
+  .belmont-arsenal__entryicon { color: var(--belmont-wax); }
+  .belmont-arsenal__entryicon svg { display: block; inline-size: 100%; block-size: auto; }
+  @media (min-width: 64em) { .belmont-arsenal__log { grid-column: d4-1 / d3-3; } }
+}
